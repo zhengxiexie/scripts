@@ -69,7 +69,7 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git .zsh/zsh-synt
 git clone https://github.com/zsh-users/zsh-history-substring-search .zsh/zsh-history-substring-search
 
 # shellcheck disable=SC2016
-echo 'eval "$(oh-my-posh init zsh  --config ~/oh-my-posh/themes/catppuccin.omp.json")"' >> ~/.zshrc
+echo 'eval "$(oh-my-posh init zsh  --config ~/oh-my-posh/themes/catppuccin.omp.json)"' >> ~/.zshrc
 # shellcheck disable=SC1090
 echo 'source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh' >> ~/.zshrc
 # shellcheck disable=SC1090
