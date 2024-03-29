@@ -1,0 +1,201 @@
+#!/bin/bash
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# sh -c "$(curl -fsSL  https://raw.githubusercontent.com/zhengxiexie/scripts/main/installk8stool.sh)"
+
+# Install kubectx and kube-ps1
+echo "Installing kubectx and kube-ps1..."
+git clone https://github.com/ahmetb/kubectx.git ~/.kubectx
+ln -s ~/.kubectx/kubectx /usr/local/bin/kubectx
+ln -s ~/.kubectx/kubens /usr/local/bin/kubens
+git clone https://github.com/jonmosco/kube-ps1.git ~/.kube-ps1
+echo 'source ~/.kube-ps1/kube-ps1.sh' >> ~/.zshrc
+echo 'export FUBECTL_WATCH_CMD=viddy' >> ~/.zshrc
+
+# Install Bat
+curl -o bat.zip -L https://github.com/sharkdp/bat/releases/download/v0.18.2/bat-v0.18.2-x86_64-unknown-linux-musl.tar.gz
+tar -xvzf bat.zip
+mv bat-v0.18.2-x86_64-unknown-linux-musl /usr/local/bat
+mv /usr/local/bat/bat /usr/local/bin
+
+# Install Viddy
+wget -O viddy.tar.gz https://github.com/sachaos/viddy/releases/download/v0.4.0/viddy_Linux_x86_64.tar.gz && tar xvf viddy.tar.gz && mv viddy /usr/local/bin
+
+# Install Popeye
+echo "Installing Popeye..."
+wget https://github.com/derailed/popeye/releases/download/v0.11.1/popeye_Linux_x86_64.tar.gz
+tar -xzvf popeye_Linux_x86_64.tar.gz
+mv popeye /usr/local/bin
+
+# Install Stern
+echo "Installing Stern..."
+wget https://github.com/stern/stern/releases/download/v1.27.0/stern_1.27.0_linux_amd64.tar.gz
+tar -xzvf stern_1.27.0_linux_amd64.tar.gz
+mv stern /usr/local/bin
+
+# Install k9s
+echo "Installing k9s..."
+wget https://github.com/derailed/k9s/releases/download/v0.28.2/k9s_Linux_amd64.tar.gz
+tar -xzvf k9s_Linux_amd64.tar.gz
+mv k9s /usr/local/bin
+
+# Install fubectl
+echo "Downloading fubectl.source..."
+curl -LO https://rawgit.com/kubermatic/fubectl/master/fubectl.source
+mv fubectl.source /usr/local/
+echo "[ -f /usr/local/fubectl.source ] && source /usr/local/fubectl.source" >> ~/.zshrc
+source ~/.zshrc
+
+
+# Configure k9s plugin
+echo "Configuring k9s plugin..."
+mkdir -p ~/.config/k9s/
+touch ~/.config/k9s/plugin.yml
+cat <<EOF > ~/.config/k9s/plugin.yml
+plugin:
+  # See https://k9scli.io/topics/plugins/
+  dive:
+    shortCut: d
+    confirm: false
+    description: "Dive image"
+    scopes:
+      - containers
+    command: dive
+    background: false
+    args:
+      - \$COL-IMA
+  debug:
+    shortCut: Shift-D
+    description: Add debug container
+    scopes:
+      - containers
+    command: bash
+    background: false
+    confirm: true
+    args:
+      - -c
+      - "kubectl debug -it -n=\$NAMESPACE \$POD --target=\$NAME --image=harbor-repo.vmware.com/nsx_ujo/netshoot:latest -- /bin/bash"
+  watch-events:
+    shortCut: Shift-E
+    confirm: false
+    description: Get Events
+    scopes:
+    - all
+    command: sh
+    background: false
+    args:
+    - -c
+    - "watch -n 5 kubectl get events --context \$CONTEXT --namespace \$NAMESPACE --field-selector involvedObject.name=\$NAME"
+  get-all-namespace:
+    shortCut: g
+    confirm: false
+    description: get-all
+    scopes:
+    - namespaces
+    command: sh
+    background: false
+    args:
+    - -c
+    - "kubectl get all --context \$CONTEXT -n \$NAME | less"
+  get-all-other:
+    shortCut: g
+    confirm: false
+    description: get-all
+    scopes:
+    - all
+    command: sh
+    background: false
+    args:
+    - -c
+    - "kubectl get all --context \$CONTEXT -n \$NAMESPACE | less"
+  raw-logs-follow:
+    shortCut: Ctrl-L
+    description: logs -f
+    scopes:
+    - po
+    command: kubectl
+    background: false
+    args:
+    - logs
+    - -f
+    - \$NAME
+    - -n
+    - \$NAMESPACE
+    - --context
+    - \$CONTEXT
+    - --kubeconfig
+    - \$KUBECONFIG
+  log-less:
+    shortCut: Shift-L
+    description: "logs|less"
+    scopes:
+    - po
+    command: bash
+    background: false
+    args:
+    - -c
+    - '"$@" | less'
+    - dummy-arg
+    - kubectl
+    - logs
+    - \$NAME
+    - -n
+    - \$NAMESPACE
+    - --context
+    - \$CONTEXT
+    - --kubeconfig
+    - \$KUBECONFIG
+  log-less-container:
+    shortCut: Shift-L
+    description: "logs|less"
+    scopes:
+    - containers
+    command: bash
+    background: false
+    args:
+    - -c
+    - '"$@" | less'
+    - dummy-arg
+    - kubectl
+    - logs
+    - -c
+    - \$NAME
+    - \$POD
+    - -n
+    - \$NAMESPACE
+    - --context
+    - \$CONTEXT
+    - --kubeconfig
+    - \$KUBECONFIG
+  raw-logs-follow-container:
+    shortCut: Ctrl-L
+    description: "logs|less"
+    scopes:
+    - containers
+    command: bash
+    background: false
+    args:
+    shortCut: Ctrl-L
+    description: logs -f
+    scopes:
+    - containers
+    command: kubectl
+    background: false
+    args:
+    - logs
+    - -f
+    - -c
+    - \$NAME
+    - \$POD
+    - -n
+    - \$NAMESPACE
+    - --context
+    - \$CONTEXT
+    - --kubeconfig
+    - \$KUBECONFIG
+EOF
+
+echo "Installation completed successfully!"
