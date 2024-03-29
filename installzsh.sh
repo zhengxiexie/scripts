@@ -55,13 +55,11 @@ cd ..
 
 # Install oh-my-posh
 curl -s https://ohmyposh.dev/install.sh | bash -s
+# shellcheck disable=SC2016
 echo 'eval "$(oh-my-posh init zsh)"' >> ~/.zshrc
 
 # Set zsh as the default shell
 echo "Setting zsh as the default shell..."
 chsh -s /bin/zsh
 
-# Source the modified zshrc file
-echo "Sourcing the modified zshrc file..."
-# shellcheck disable=SC1090
-zsh && source ~/.zshrc
+zsh
