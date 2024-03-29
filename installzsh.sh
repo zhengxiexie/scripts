@@ -40,10 +40,10 @@ if [ -z "$cmd" ]; then
 fi
 
 echo "Using $cmd for package management."
-${cmd} update
+${cmd} update -y
 
 echo "Installing required packages..."
-${cmd} install -y wget gcc make python binutils rsync git zsh fzf autojump
+${cmd} install -y wget gcc make  binutils rsync git zsh
 
 
 # Install autojump
