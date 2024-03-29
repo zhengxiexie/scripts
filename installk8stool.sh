@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# sh -c "$(curl -fsSL  https://raw.githubusercontent.com/zhengxiexie/scripts/main/installk8stool.sh)"
+# zsh -c "$(curl -fsSL  https://raw.githubusercontent.com/zhengxiexie/scripts/main/installk8stool.sh)"
 
 # Install kubectx and kube-ps1
 echo "Installing kubectx and kube-ps1..."
@@ -47,7 +47,6 @@ echo "Downloading fubectl.source..."
 curl -LO https://rawgit.com/kubermatic/fubectl/master/fubectl.source
 mv fubectl.source /usr/local/
 echo "[ -f /usr/local/fubectl.source ] && source /usr/local/fubectl.source" >> ~/.zshrc
-source ~/.zshrc
 
 
 # Configure k9s plugin
