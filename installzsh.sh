@@ -21,11 +21,11 @@ if [ -f /etc/os-release ]; then
     fi
 fi
 
-$cmd update
+${cmd} update
 
 # Install required packages
 echo "Installing required packages..."
-$cmd install -y wget gcc make python binutils rsync git zsh fzf autojump
+${cmd} install -y wget gcc make python binutils rsync git zsh fzf autojump
 
 # Install autojump
 echo "Installing autojump..."
