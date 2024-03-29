@@ -50,7 +50,7 @@ ${cmd} install -y wget gcc make  binutils rsync git zsh
 echo "Installing autojump..."
 git clone https://github.com/wting/autojump.git
 cd autojump || exit
-./install.py or ./uninstall.py
+./install.py
 cd ..
 
 # Install oh-my-zsh
