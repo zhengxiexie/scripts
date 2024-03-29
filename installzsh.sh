@@ -68,6 +68,9 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM
 git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
 git clone https://github.com/zsh-users/zsh-history-substring-search "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-history-substring-search
 
+# Install oh-my-posh
+curl -s https://ohmyposh.dev/install.sh | bash -s
+
 # Configure zsh theme and plugins
 echo "Configuring zsh theme and plugins..."
 sed -i 's/plugins=(\(.*\))/plugins=(\1 git zsh-syntax-highlighting zsh-autosuggestions autojump colored-man-pages cp vi-mode zsh-history-substring-search)/' ~/.zshrc
