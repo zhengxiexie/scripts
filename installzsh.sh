@@ -43,7 +43,7 @@ echo "Using $cmd for package management."
 ${cmd} update -y
 
 echo "Installing required packages..."
-${cmd} install -y wget gcc make  binutils rsync git zsh
+${cmd} install -y wget gcc make  binutils rsync git zsh zip unzip
 
 
 # Install autojump
@@ -55,11 +55,29 @@ cd ..
 
 # Install oh-my-posh
 curl -s https://ohmyposh.dev/install.sh | bash -s
-# shellcheck disable=SC2016
-echo 'eval "$(oh-my-posh init zsh)"' >> ~/.zshrc
+git clone https://github.com/JanDeDobbeleer/oh-my-posh
 
 # Set zsh as the default shell
 echo "Setting zsh as the default shell..."
 chsh -s /bin/zsh
 
-zsh
+# Install zsh plugins
+echo "Installing zsh plugins..."
+mkdir .zsh
+git clone https://github.com/zsh-users/zsh-autosuggestions.git .zsh/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git .zsh/zsh-syntax-highlightings
+git clone https://github.com/zsh-users/zsh-history-substring-search .zsh/zsh-history-substring-search
+
+# shellcheck disable=SC2016
+echo 'eval "$(oh-my-posh init zsh  --config ~/oh-my-posh/themes/catppuccin.omp.json")"' >> ~/.zshrc
+# shellcheck disable=SC1090
+echo 'source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh' >> ~/.zshrc
+# shellcheck disable=SC1090
+echo 'source ~/.zsh/zsh-syntax-highlightings/zsh-syntax-highlighting.zsh' >> ~/.zshrc
+# shellcheck disable=SC1090
+echo 'source ~/.zsh/zsh-history-substring-search/zsh-history-substring-search.zsh' >> ~/.zshrc
+
+# Source the modified zshrc file
+echo "Sourcing the modified zshrc file..."
+# shellcheck disable=SC1090
+zsh && source ~/.zshrc
