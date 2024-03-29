@@ -1,31 +1,50 @@
 #!/bin/bash
 
-
-set -o xtrace
 set -o errexit
 set -o nounset
 set -o pipefail
 
 # sh -c "$(curl -fsSL  https://raw.githubusercontent.com/zhengxiexie/scripts/main/installzsh.sh)"
 # Update package repositories
+
+# Set a default package manager
+cmd=""
+
 echo "Updating package repositories..."
-cmd="tdnf"
 if [ -f /etc/os-release ]; then
     . /etc/os-release
-    if [ "$ID" = "photon" ]; then
-      cmd="tdnf"
-    elif [ "$ID" = "ubuntu" ]; then
-      cmd="apt"
-    elif [ "$ID" = "centos" ]; then
-      cmd="yum"
-    fi
+    case "$ID" in
+        photon)
+            cmd="tdnf"
+            ;;
+        ubuntu)
+            cmd="apt"
+            ;;
+        centos)
+            cmd="yum"
+            ;;
+        *)
+            echo "Unsupported distribution: $ID"
+            exit 1
+            ;;
+    esac
+else
+    echo "/etc/os-release not found. Cannot determine package manager."
+    exit 1
 fi
 
+# Ensure cmd is not empty
+if [ -z "$cmd" ]; then
+    echo "Package manager command not set. Exiting."
+    exit 1
+fi
+
+echo "Using $cmd for package management."
 ${cmd} update
 
-# Install required packages
 echo "Installing required packages..."
 ${cmd} install -y wget gcc make python binutils rsync git zsh fzf autojump
+
 
 # Install autojump
 echo "Installing autojump..."
