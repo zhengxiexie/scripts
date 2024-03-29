@@ -53,30 +53,13 @@ cd autojump || exit
 ./install.py
 cd ..
 
-# Install oh-my-zsh
-echo "Installing oh-my-zsh..."
-wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-sh install.sh --unattended
+# Install oh-my-posh
+curl -s https://ohmyposh.dev/install.sh | bash -s
+echo 'eval "$(oh-my-posh init zsh)"' >> ~/.zshrc
 
 # Set zsh as the default shell
 echo "Setting zsh as the default shell..."
 chsh -s /bin/zsh
-
-# Install zsh plugins
-echo "Installing zsh plugins..."
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-history-substring-search "${ZSH_CUSTOM:-~/.oh-my-zsh/custom}"/plugins/zsh-history-substring-search
-
-# Install oh-my-posh
-curl -s https://ohmyposh.dev/install.sh | bash -s
-
-# Configure zsh theme and plugins
-echo "Configuring zsh theme and plugins..."
-sed -i 's/plugins=(\(.*\))/plugins=(\1 git zsh-syntax-highlighting zsh-autosuggestions autojump colored-man-pages cp vi-mode zsh-history-substring-search)/' ~/.zshrc
-# eval "$(oh-my-posh init zsh)" to ~/.zshrc
-# shellcheck disable=SC2016
-echo 'eval "$(oh-my-posh init zsh)"' >> ~/.zshrc
 
 # Source the modified zshrc file
 echo "Sourcing the modified zshrc file..."
