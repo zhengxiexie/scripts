@@ -76,6 +76,8 @@ echo 'source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh' >> ~/.zshrc
 echo 'source ~/.zsh/zsh-syntax-highlightings/zsh-syntax-highlighting.zsh' >> ~/.zshrc
 # shellcheck disable=SC1090
 echo 'source ~/.zsh/zsh-history-substring-search/zsh-history-substring-search.zsh' >> ~/.zshrc
+echo '[[ -s /root/.autojump/etc/profile.d/autojump.sh ]] && source /root/.autojump/etc/profile.d/autojump.sh' >> ~/.zshrc
+echo 'autoload -U compinit && compinit -u' >> ~/.zshrc
 
 # Source the modified zshrc file
 echo "Sourcing the modified zshrc file..."
