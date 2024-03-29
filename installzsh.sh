@@ -9,6 +9,7 @@ set -o pipefail
 # sh -c "$(curl -fsSL  https://raw.githubusercontent.com/zhengxiexie/scripts/main/installzsh.sh)"
 # Update package repositories
 echo "Updating package repositories..."
+cmd="tdnf"
 if [ -f /etc/os-release ]; then
     . /etc/os-release
     if [ "$ID" = "photon" ]; then
