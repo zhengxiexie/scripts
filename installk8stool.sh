@@ -21,6 +21,23 @@ tar -xvzf bat.zip
 mv bat-v0.18.2-x86_64-unknown-linux-musl /usr/local/bat
 mv /usr/local/bat/bat /usr/local/bin
 
+# Install fzf
+curl -o fzf.zip -L https://github.com/junegunn/fzf/releases/download/0.48.1/fzf-0.48.1-linux_amd64.tar.gz
+tar -xvzf fzf.zip
+mv fzf /usr/local/bin/fzf
+
+# Install ripgrep
+curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+mv /root/.cargo/bin/cargo-binstall /usr/local/bin
+cargo-binstall ripgrep -y --force
+mv /root/.cargo/bin/rg /usr/local/bin
+
+# Install ranger
+curl -o ranger.zip -L https://ranger.github.io/ranger-stable.tar.gz
+tar -xvzf ranger.zip
+cd ranger-*
+sudo python setup.py install --optimize=1 --record=install_log.txt
+
 # Install Viddy
 wget -O viddy.tar.gz https://github.com/sachaos/viddy/releases/download/v0.4.0/viddy_Linux_x86_64.tar.gz && tar xvf viddy.tar.gz && mv viddy /usr/local/bin
 
