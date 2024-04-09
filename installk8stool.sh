@@ -26,6 +26,12 @@ curl -o fzf.zip -L https://github.com/junegunn/fzf/releases/download/0.48.1/fzf-
 tar -xvzf fzf.zip
 mv fzf /usr/local/bin/fzf
 
+# Install exa
+curl -o exa.zip -L https://github.com/ogham/exa/releases/download/v0.10.1/exa-linux-x86_64-v0.10.1.zip
+unzip exa.zip
+mv bin/exa /usr/local/bin/exa
+echo 'alias ls=exa' >> ~/.zshrc
+
 # Install ripgrep
 curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
 mv /root/.cargo/bin/cargo-binstall /usr/local/bin
