@@ -15,6 +15,8 @@ git clone https://github.com/jonmosco/kube-ps1.git ~/.kube-ps1
 echo 'source ~/.kube-ps1/kube-ps1.sh' >> ~/.zshrc
 echo 'export FUBECTL_WATCH_CMD=viddy' >> ~/.zshrc
 
+rm -fr /root/.kubectx /usr/local/bin/kubectx /usr/local/bin/kubens /root/.kube-ps1 /usr/local/bat/bat /usr/local/bat
+
 # Install Bat
 curl -o bat.zip -L https://github.com/sharkdp/bat/releases/download/v0.18.2/bat-v0.18.2-x86_64-unknown-linux-musl.tar.gz
 tar -xvzf bat.zip
@@ -33,10 +35,9 @@ mv bin/exa /usr/local/bin/exa
 echo 'alias ls=exa' >> ~/.zshrc
 
 # Install ripgrep
-curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-mv /root/.cargo/bin/cargo-binstall /usr/local/bin
-cargo-binstall ripgrep -y --force
-mv /root/.cargo/bin/rg /usr/local/bin
+curl -o rip.zip -L https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-x86_64-unknown-linux-musl.tar.gz
+tar -xvzf rip.zip
+mv ripgrep-14.1.0-x86_64-unknown-linux-musl/rg /usr/local/bin
 
 # Install ranger
 curl -o ranger.zip -L https://ranger.github.io/ranger-stable.tar.gz
