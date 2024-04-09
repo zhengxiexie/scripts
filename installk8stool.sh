@@ -4,6 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+rm -fr /root/.kubectx /usr/local/bin/kubectx /usr/local/bin/kubens /root/.kube-ps1 /usr/local/bat/bat /usr/local/bat
 # zsh -c "$(curl -fsSL  https://raw.githubusercontent.com/zhengxiexie/scripts/main/installk8stool.sh)"
 
 # Install kubectx and kube-ps1
@@ -15,7 +16,6 @@ git clone https://github.com/jonmosco/kube-ps1.git ~/.kube-ps1
 echo 'source ~/.kube-ps1/kube-ps1.sh' >> ~/.zshrc
 echo 'export FUBECTL_WATCH_CMD=viddy' >> ~/.zshrc
 
-rm -fr /root/.kubectx /usr/local/bin/kubectx /usr/local/bin/kubens /root/.kube-ps1 /usr/local/bat/bat /usr/local/bat
 
 # Install Bat
 curl -o bat.zip -L https://github.com/sharkdp/bat/releases/download/v0.18.2/bat-v0.18.2-x86_64-unknown-linux-musl.tar.gz
