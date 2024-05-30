@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-rm -fr /root/.kubectx /usr/local/bin/kubectx /usr/local/bin/kubens /root/.kube-ps1 /usr/local/bat/bat /usr/local/bat /usr/local/go /root/go
+rm -fr /root/.kubectx /usr/local/bin/kubectx /usr/local/bin/kubens /root/.kube-ps1 /usr/local/bat/bat /usr/local/bat /usr/local/go /root/go /usr/local/fubectl.source
 # zsh -c "$(curl -fsSL  https://raw.githubusercontent.com/zhengxiexie/scripts/main/installk8stool.sh)"
 
 # Install kubectx and kube-ps1
@@ -82,6 +82,7 @@ mv k9s /usr/local/bin
 echo "Downloading fubectl.source..."
 curl -LO https://rawgit.com/kubermatic/fubectl/master/fubectl.source
 mv fubectl.source /usr/local/
+sed -i 's/complete -o default -F __start_kubectl k/compdef default __start_kubectl k/' /usr/local/fubectl.source
 echo "[ -f /usr/local/fubectl.source ] && source /usr/local/fubectl.source" >> ~/.zshrc
 
 
