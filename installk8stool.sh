@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-rm -fr /root/.kubectx /usr/local/bin/kubectx /usr/local/bin/kubens /root/.kube-ps1 /usr/local/bat/bat /usr/local/bat
+rm -fr /root/.kubectx /usr/local/bin/kubectx /usr/local/bin/kubens /root/.kube-ps1 /usr/local/bat/bat /usr/local/bat /usr/local/go /root/go
 # zsh -c "$(curl -fsSL  https://raw.githubusercontent.com/zhengxiexie/scripts/main/installk8stool.sh)"
 
 # Install kubectx and kube-ps1
@@ -16,6 +16,18 @@ git clone https://github.com/jonmosco/kube-ps1.git ~/.kube-ps1
 echo 'source ~/.kube-ps1/kube-ps1.sh' >> ~/.zshrc
 echo 'export FUBECTL_WATCH_CMD=viddy' >> ~/.zshrc
 
+
+# Install golang
+wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
+# shellcheck disable=SC2016
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.zshrc
+# shellcheck disable=SC2016
+echo 'export PATH=$PATH:/root/go/bin' >> ~/.zshrc
+source ~/.zshrc
+go install github.com/trzsz/trzsz-go/cmd/trz@latest
+go install github.com/trzsz/trzsz-go/cmd/tsz@latest
+go install github.com/trzsz/trzsz-go/cmd/trzsz@latest
 
 # Install Bat
 curl -o bat.zip -L https://github.com/sharkdp/bat/releases/download/v0.18.2/bat-v0.18.2-x86_64-unknown-linux-musl.tar.gz

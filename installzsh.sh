@@ -43,7 +43,7 @@ echo "Using $cmd for package management."
 ${cmd} update -y
 
 echo "Installing required packages..."
-${cmd} install -y wget gcc make  binutils rsync git zsh zip unzip
+${cmd} install -y wget gcc make  binutils rsync git zsh zip unzip glibc-devel syslinux-devel linux-api-headers
 
 
 # Install autojump
