@@ -10,6 +10,8 @@ set -o pipefail
 # Set a default package manager
 cmd=""
 
+rm -fr ~/autojump ~/.autojump/ ~/.zsh ~/.zshrc ~/.kube-ps1/ ~/oh-my-posh
+
 echo "Updating package repositories..."
 if [ -f /etc/os-release ]; then
     . /etc/os-release
