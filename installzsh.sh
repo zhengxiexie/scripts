@@ -11,6 +11,7 @@ set -o pipefail
 cmd=""
 
 mkdir -p /root/.local/bin
+export PATH=$PATH:/root/.local/bin
 rm -fr ~/autojump ~/.autojump/ ~/.zsh ~/.zshrc ~/.kube-ps1/ ~/oh-my-posh
 
 echo "Updating package repositories..."
@@ -93,6 +94,7 @@ echo 'source ~/.zsh/zsh-history-substring-search/zsh-history-substring-search.zs
 echo '[[ -s /root/.autojump/etc/profile.d/autojump.sh ]] && source /root/.autojump/etc/profile.d/autojump.sh' >> ~/.zshrc
 echo 'autoload -U compinit && compinit -u' >> ~/.zshrc
 echo 'source ~/.zsh/.zsh-vi-mode/zsh-vi-mode.plugin.zsh' >> ~/.zshrc
+echo 'export PATH=$PATH:/root/.local/bin' >> ~/.zshrc
 
 # Source the modified zshrc file
 echo "Sourcing the modified zshrc file..."

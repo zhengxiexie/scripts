@@ -6,9 +6,13 @@ import pexpect
 
 def download_json(url, filename="testbedInfo.json"):
     # Use wget to download the file
-    subprocess.run(["wget", "-O", filename, url], check=True)
-    with open(filename, "r") as file:
-        return json.load(file)
+    if os.path.exists(filename):
+        with open(filename, "r") as file:
+            return json.load(file)
+    else:
+        subprocess.run(["wget", "-O", filename, url], check=True)
+        with open(filename, "r") as file:
+            return json.load(file)
 
 def execute_remote_command(ip, username, password, command):
     print("-"*20)
