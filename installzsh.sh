@@ -84,6 +84,7 @@ git clone https://github.com/zsh-users/zsh-history-substring-search .zsh/zsh-his
 git clone https://github.com/jeffreytse/zsh-vi-mode.git .zsh/.zsh-vi-mode
 
 # shellcheck disable=SC2016
+echo 'export PATH=$PATH:/root/.local/bin' >> ~/.zshrc
 echo 'eval "$(oh-my-posh init zsh  --config ~/oh-my-posh/themes/catppuccin.omp.json)"' >> ~/.zshrc
 # shellcheck disable=SC1090
 echo 'source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh' >> ~/.zshrc
@@ -94,7 +95,6 @@ echo 'source ~/.zsh/zsh-history-substring-search/zsh-history-substring-search.zs
 echo '[[ -s /root/.autojump/etc/profile.d/autojump.sh ]] && source /root/.autojump/etc/profile.d/autojump.sh' >> ~/.zshrc
 echo 'autoload -U compinit && compinit -u' >> ~/.zshrc
 echo 'source ~/.zsh/.zsh-vi-mode/zsh-vi-mode.plugin.zsh' >> ~/.zshrc
-echo 'export PATH=$PATH:/root/.local/bin' >> ~/.zshrc
 
 # Source the modified zshrc file
 echo "Sourcing the modified zshrc file..."

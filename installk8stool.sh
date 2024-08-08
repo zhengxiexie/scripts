@@ -16,6 +16,9 @@ git clone https://github.com/jonmosco/kube-ps1.git ~/.kube-ps1
 echo 'source ~/.kube-ps1/kube-ps1.sh' >> ~/.zshrc
 echo 'export FUBECTL_WATCH_CMD=viddy' >> ~/.zshrc
 
+# Install https://raw.githubusercontent.com/ahmetb/kubectl-aliases/master/.kubectl_aliases
+wget https://raw.githubusercontent.com/ahmetb/kubectl-aliases/master/.kubectl_aliases
+echo '[ -f ~/.kubectl_aliases ] && source ~/.kubectl_aliases' >> ~/.zshrc
 
 # Install golang
 wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
