@@ -138,18 +138,7 @@ plugin:
     background: false
     args:
     - -c
-    - "kubectl get all --context \$CONTEXT -n \$NAME | less"
-  get-all-other:
-    shortCut: g
-    confirm: false
-    description: get-all
-    scopes:
-    - all
-    command: sh
-    background: false
-    args:
-    - -c
-    - "kubectl get all --context \$CONTEXT -n \$NAMESPACE | less"
+    - "kubectl get all --context \$CONTEXT -A | less"
   raw-logs-follow:
     shortCut: Ctrl-L
     description: logs -f
