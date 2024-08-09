@@ -65,19 +65,19 @@ wget -O viddy.tar.gz https://github.com/sachaos/viddy/releases/download/v0.4.0/v
 
 # Install Popeye
 echo "Installing Popeye..."
-wget https://github.com/derailed/popeye/releases/download/v0.11.1/popeye_Linux_x86_64.tar.gz
+wget https://github.com/derailed/popeye/releases/download/v0.21.3/popeye_Linux_x86_64.tar.gz
 tar -xzvf popeye_Linux_x86_64.tar.gz
 mv popeye /usr/local/bin
 
 # Install Stern
 echo "Installing Stern..."
-wget https://github.com/stern/stern/releases/download/v1.27.0/stern_1.27.0_linux_amd64.tar.gz
-tar -xzvf stern_1.27.0_linux_amd64.tar.gz
+wget https://github.com/stern/stern/releases/download/v1.30.0/stern_1.30.0_linux_amd64.tar.gz
+tar -xzvf stern_1.30.0_linux_amd64.tar.gz
 mv stern /usr/local/bin
 
 # Install k9s
 echo "Installing k9s..."
-wget https://github.com/derailed/k9s/releases/download/v0.28.2/k9s_Linux_amd64.tar.gz
+wget https://github.com/derailed/k9s/releases/download/v0.32.5/k9s_Linux_amd64.tar.gz
 tar -xzvf k9s_Linux_amd64.tar.gz
 mv k9s /usr/local/bin
 
