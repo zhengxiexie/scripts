@@ -81,6 +81,12 @@ wget https://github.com/derailed/k9s/releases/download/v0.28.2/k9s_Linux_amd64.t
 tar -xzvf k9s_Linux_amd64.tar.gz
 mv k9s /usr/local/bin
 
+# Install ketall
+echo "Installing ketall..."
+curl -Lo ketall.gz https://github.com/corneliusweig/ketall/releases/download/v1.3.8/ketall-amd64-linux.tar.gz
+tar -xzvf tar zxvf ketall.gz
+mv ketall-amd64-linux /usr/local/bin/ketall
+
 # Install fubectl
 echo "Downloading fubectl.source..."
 curl -LO https://rawgit.com/kubermatic/fubectl/master/fubectl.source
