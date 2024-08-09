@@ -4,7 +4,6 @@ import json
 import random
 import string
 import logger
-import hack
 import util
 
 from timeout_decorator import timeout_decorator
