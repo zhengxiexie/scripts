@@ -11,6 +11,6 @@ cd scripts
 pip3 install -r requirements.txt
 
 echo "enable wcp sleep"
-echo "python3 main.py 0"
+echo "python3 /root/main.py 0"
 echo "enable wcp non-sleep"
-echo "python3 main.py 1"
+echo "python3 /root/main.py 1"
