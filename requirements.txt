@@ -1,0 +1,5 @@
+# use python 3.8.10
+pytz==2022.7.1
+kubernetes==11.0.0
+paramiko~=3.0.0
+timeout-decorator
