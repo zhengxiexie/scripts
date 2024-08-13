@@ -65,8 +65,8 @@ wget -O viddy.tar.gz https://github.com/sachaos/viddy/releases/download/v0.4.0/v
 
 # Install Popeye
 echo "Installing Popeye..."
-wget https://github.com/derailed/popeye/releases/download/v0.21.3/popeye_Linux_x86_64.tar.gz
-tar -xzvf popeye_Linux_x86_64.tar.gz
+wget https://github.com/derailed/popeye/releases/download/v0.21.3/popeye_linux_amd64.tar.gz
+tar -xzvf popeye_linux_amd64.tar.gz
 mv popeye /usr/local/bin
 
 # Install Stern
