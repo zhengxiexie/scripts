@@ -84,7 +84,7 @@ mv k9s /usr/local/bin
 # Install ketall
 echo "Installing ketall..."
 curl -Lo ketall.gz https://github.com/corneliusweig/ketall/releases/download/v1.3.8/ketall-amd64-linux.tar.gz
-tar -xzvf tar zxvf ketall.gz
+tar -xzvf ketall.gz
 mv ketall-amd64-linux /usr/local/bin/ketall
 
 # Install fubectl
