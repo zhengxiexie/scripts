@@ -87,6 +87,12 @@ curl -Lo ketall.gz https://github.com/corneliusweig/ketall/releases/download/v1.
 tar -xzvf ketall.gz
 mv ketall-amd64-linux /usr/local/bin/ketall
 
+# Install kubeshark
+echo "Installing kubeshark..."
+curl -Lo kubeshark https://github.com/kubeshark/kubeshark/releases/download/v52.3.74/kubeshark_linux_amd64
+chmod 755 kubeshark
+mv kubeshark /usr/local/bin/
+
 # Install fubectl
 echo "Downloading fubectl.source..."
 curl -LO https://rawgit.com/kubermatic/fubectl/master/fubectl.source
