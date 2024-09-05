@@ -19,6 +19,10 @@ if [ -f /etc/os-release ]; then
     . /etc/os-release
     case "$ID" in
         photon)
+          # Photon OS uses a different repository URL than other Linux distributions
+            /usr/bin/sed -i \
+              's|packages.vmware.com/photon|artifactory.vcfd.broadcom.net/artifactory/photon-remote|g' \
+              /etc/yum.repos.d/*.repo
             cmd="tdnf"
             ;;
         ubuntu)
