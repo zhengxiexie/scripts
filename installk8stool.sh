@@ -103,6 +103,8 @@ mv kubeshark /usr/local/bin/
 # Install atuin
 echo "Downloading atuin..."
 curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+sed -i 's/enter_accept = true/enter_accept = false/' ~/.config/atuin/config.toml
+sed -i 's/# style = "auto"/style = "compact"/' ~/.config/atuin/config.toml
 cat <<EOF >> ~/.zshrc
 export PATH=$PATH:/root/.atuin/bin
 export ATUIN_NOBIND="true"
