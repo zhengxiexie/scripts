@@ -100,6 +100,17 @@ mv fubectl.source /usr/local/
 sed -i 's/complete -o default -F __start_kubectl k/compdef default __start_kubectl k/' /usr/local/fubectl.source
 echo "[ -f /usr/local/fubectl.source ] && source /usr/local/fubectl.source" >> ~/.zshrc
 
+# Install atuin
+echo "Downloading atuin..."
+curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+cat <<EOF >> ~/.zshrc
+export ATUIN_NOBIND="true"
+eval "$(atuin init zsh)"
+bindkey '^r' atuin-search
+# bind to the up key, which depends on terminal mode
+bindkey '^[[A' atuin-up-search
+bindkey '^[OA' atuin-up-search
+EOF
 
 # Configure k9s plugin
 echo "Configuring k9s plugin..."
