@@ -94,16 +94,17 @@ chmod 755 kubeshark
 mv kubeshark /usr/local/bin/
 
 # Install fubectl
-echo "Downloading fubectl.source..."
-curl -LO https://rawgit.com/kubermatic/fubectl/master/fubectl.source
-mv fubectl.source /usr/local/
-sed -i 's/complete -o default -F __start_kubectl k/compdef default __start_kubectl k/' /usr/local/fubectl.source
-echo "[ -f /usr/local/fubectl.source ] && source /usr/local/fubectl.source" >> ~/.zshrc
+#echo "Downloading fubectl.source..."
+#curl -LO https://rawgit.com/kubermatic/fubectl/master/fubectl.source
+#mv fubectl.source /usr/local/
+#sed -i 's/complete -o default -F __start_kubectl k/compdef default __start_kubectl k/' /usr/local/fubectl.source
+#echo "[ -f /usr/local/fubectl.source ] && source /usr/local/fubectl.source" >> ~/.zshrc
 
 # Install atuin
 echo "Downloading atuin..."
 curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
 cat <<EOF >> ~/.zshrc
+export PATH=$PATH:/root/.atuin/bin
 export ATUIN_NOBIND="true"
 eval "$(atuin init zsh)"
 bindkey '^r' atuin-search
