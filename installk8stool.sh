@@ -255,3 +255,5 @@ plugin:
 EOF
 
 echo "Installation completed successfully!"
+
+zsh && source ~/.zshrc
