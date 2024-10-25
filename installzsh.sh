@@ -103,4 +103,4 @@ echo 'source ~/.zsh/.zsh-vi-mode/zsh-vi-mode.plugin.zsh' >> ~/.zshrc
 # Source the modified zshrc file
 echo "Sourcing the modified zshrc file..."
 # shellcheck disable=SC1090
-zsh && source ~/.zshrc
+source ~/.zshrc
