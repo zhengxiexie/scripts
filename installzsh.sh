@@ -99,8 +99,3 @@ echo 'source ~/.zsh/zsh-history-substring-search/zsh-history-substring-search.zs
 echo '[[ -s /root/.autojump/etc/profile.d/autojump.sh ]] && source /root/.autojump/etc/profile.d/autojump.sh' >> ~/.zshrc
 echo 'autoload -U compinit && compinit -u' >> ~/.zshrc
 echo 'source ~/.zsh/.zsh-vi-mode/zsh-vi-mode.plugin.zsh' >> ~/.zshrc
-
-# Source the modified zshrc file
-echo "Sourcing the modified zshrc file..."
-# shellcheck disable=SC1090
-source ~/.zshrc
