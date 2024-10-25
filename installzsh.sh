@@ -76,8 +76,8 @@ curl -s https://ohmyposh.dev/install.sh | bash -s
 git clone https://github.com/JanDeDobbeleer/oh-my-posh
 
 # Set zsh as the default shell
-echo "Setting zsh as the default shell..."
-chsh -s /bin/zsh
+#echo "Setting zsh as the default shell..."
+#chsh -s /bin/zsh
 
 # Install zsh plugins
 echo "Installing zsh plugins..."
