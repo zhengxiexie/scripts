@@ -8,7 +8,7 @@ tdnf install -y python3
 tdnf install -y python3-pip
 git clone https://github.com/zhengxiexie/scripts.git
 cd scripts
-pip3 install -r requirements.txt
+pip3 install --index-url=https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-remote/simple/ -r requirements.txt
 
 echo "enable wcp sleep"
 echo "python3 /root/scripts/main.py 0"
