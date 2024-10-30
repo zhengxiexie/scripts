@@ -88,6 +88,7 @@ git clone https://github.com/zsh-users/zsh-history-substring-search .zsh/zsh-his
 git clone https://github.com/jeffreytse/zsh-vi-mode.git .zsh/.zsh-vi-mode
 
 # shellcheck disable=SC2016
+echo 'export PATH=$PATH:/root/bin' >> ~/.zshrc
 echo 'export PATH=$PATH:/root/.local/bin' >> ~/.zshrc
 echo 'eval "$(oh-my-posh init zsh  --config ~/oh-my-posh/themes/catppuccin.omp.json)"' >> ~/.zshrc
 # shellcheck disable=SC1090
