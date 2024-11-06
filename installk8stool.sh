@@ -106,7 +106,7 @@ echo "Downloading atuin..."
 curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
 mv /root/.atuin/bin/atuin /usr/local/bin
 export PATH=$PATH:/root/.atuin/bin
-autuin init zsh
+atuin init zsh
 sed -i 's/enter_accept = true/enter_accept = false/' ~/.config/atuin/config.toml
 sed -i 's/# style = "auto"/style = "compact"/' ~/.config/atuin/config.toml
 cat <<EOF >> ~/.zshrc
