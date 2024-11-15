@@ -19,15 +19,12 @@ def execute_remote_command(ip, username, password, command):
     print(f"VC IP: {ip}")
     print(f"VC PWD: {password}")
     print(f"VC COMMAND: /usr/lib/vmware-wcp/decryptK8Pwd.py")
-    os.environ['SSHPASS'] = password
-    ssh_command = f"sshpass -e ssh -o StrictHostKeyChecking=no {username}@{ip} {command}"
+    ssh_command = f"sshpass -p '{password}' ssh -o StrictHostKeyChecking=no {username}@{ip} {command}"
     result = subprocess.run(ssh_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     return result.stdout, result.stderr
 
 def open_interactive_ssh_session(ip, username, password):
-    print("-"*20)
     command = f"sshpass -p '{password}' ssh -o StrictHostKeyChecking=no  {username}@{ip}"
-    print(command)
      # Use pbcopy to copy the string to the clipboard
     process = subprocess.Popen(['pbcopy'], stdin=subprocess.PIPE)
     process.communicate(input=command.encode('utf-8'))
