@@ -22,8 +22,8 @@ echo 'export FUBECTL_WATCH_CMD=viddy' >> ~/.zshrc
 
 # Install golang
 #wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz
-wget https://artifactory.vcfd.broadcom.net/artifactory/golang-dist/go1.22.5.linux-amd64.tar.gz
-tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz
+wget https://artifactory.vcfd.broadcom.net/artifactory/golang-dist/go1.23.1.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.23.1.linux-amd64.tar.gz
 # shellcheck disable=SC2016
 echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.zshrc
 # shellcheck disable=SC2016
