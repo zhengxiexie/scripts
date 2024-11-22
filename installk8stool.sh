@@ -101,22 +101,6 @@ mv kubeshark /usr/local/bin/
 #sed -i 's/complete -o default -F __start_kubectl k/compdef default __start_kubectl k/' /usr/local/fubectl.source
 #echo "[ -f /usr/local/fubectl.source ] && source /usr/local/fubectl.source" >> ~/.zshrc
 
-# Install atuin
-echo "Downloading atuin..."
-curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
-mv /root/.atuin/bin/atuin /usr/local/bin
-atuin init zsh
-sed -i 's/enter_accept = true/enter_accept = false/' ~/.config/atuin/config.toml
-sed -i 's/# style = "auto"/style = "compact"/' ~/.config/atuin/config.toml
-cat <<EOF >> ~/.zshrc
-export ATUIN_NOBIND="true"
-eval "$(atuin init zsh)"
-bindkey '^r' atuin-search
-# bind to the up key, which depends on terminal mode
-bindkey '^[[A' atuin-up-search
-bindkey '^[OA' atuin-up-search
-EOF
-
 # Configure k9s plugin
 echo "Configuring k9s plugin..."
 mkdir -p ~/.config/k9s/
@@ -252,6 +236,21 @@ plugin:
     - \$CONTEXT
     - --kubeconfig
     - \$KUBECONFIG
+EOF
+
+# Install atuin
+echo "Downloading atuin..."
+curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+mv /root/.atuin/bin/atuin /usr/local/bin
+atuin init zsh
+sed -i 's/enter_accept = true/enter_accept = false/' ~/.config/atuin/config.toml
+sed -i 's/# style = "auto"/style = "compact"/' ~/.config/atuin/config.toml
+cat <<EOF >> ~/.zshrc
+export ATUIN_NOBIND="true"
+"$(atuin init zsh)"
+# bind to the up key, which depends on terminal mode
+bindkey '^[[A' atuin-up-search
+bindkey '^[OA' atuin-up-search
 EOF
 
 echo "Installation completed successfully!"
