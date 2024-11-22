@@ -19,15 +19,22 @@ def execute_remote_command(ip, username, password, command):
     print(f"VC IP: {ip}")
     print(f"VC PWD: {password}")
     print(f"VC COMMAND: /usr/lib/vmware-wcp/decryptK8Pwd.py")
-    ssh_command = f"sshpass -p '{password}' ssh -o StrictHostKeyChecking=no {username}@{ip} {command}"
+    ssh_command = f"export SSHPASS='{password}'; sshpass -e  /usr/bin/ssh -o StrictHostKeyChecking=no {username}@{ip} {command}"
+    print(ssh_command)
     result = subprocess.run(ssh_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     return result.stdout, result.stderr
 
 def open_interactive_ssh_session(ip, username, password):
-    command = f"sshpass -p '{password}' ssh -o StrictHostKeyChecking=no  {username}@{ip}"
+    command = f"export SSHPASS='{password}'; sshpass -e  /usr/bin/ssh -o StrictHostKeyChecking=no  {username}@{ip}"
      # Use pbcopy to copy the string to the clipboard
+    print(command)
+    print("or")
+    warp_command = f"command ssh {username}@{ip}"
+    print(warp_command)
     process = subprocess.Popen(['pbcopy'], stdin=subprocess.PIPE)
-    process.communicate(input=command.encode('utf-8'))
+    process.communicate(input=password.encode('utf-8'))
+    process = subprocess.Popen(['pbcopy'], stdin=subprocess.PIPE)
+    process.communicate(input=warp_command.encode('utf-8'))
 
 
 def main(url):
