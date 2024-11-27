@@ -53,13 +53,13 @@ ${cmd} update -y
 echo "Installing required packages..."
 case "$ID" in
     ubuntu)
-        ${cmd} install -y wget gcc make  binutils rsync git zsh zip
+        ${cmd} install -y wget gcc make  binutils rsync go git zsh zip
         ;;
     photon)
-        ${cmd} install -y wget gcc make  binutils rsync git zsh zip unzip glibc-devel syslinux-devel linux-api-headers
+        ${cmd} install -y wget gcc make  binutils rsync go git zsh zip unzip glibc-devel syslinux-devel linux-api-headers
         ;;
     centos)
-        ${cmd} install -y wget gcc make  binutils rsync git zsh zip unzip glibc-devel syslinux-devel linux-api-headers
+        ${cmd} install -y wget gcc make  binutils rsync go git zsh zip unzip glibc-devel syslinux-devel linux-api-headers
         ;;
 esac
 
