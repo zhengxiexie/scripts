@@ -54,7 +54,7 @@ echo "Installing required packages..."
 case "$ID" in
     ubuntu)
         snap install go
-        ${cmd} install -y wget gcc make  binutils rsync go git zsh zip
+        ${cmd} install -y wget gcc make  binutils rsync git zsh zip
         ;;
     photon)
         ${cmd} install -y wget gcc make  binutils rsync go git zsh zip unzip glibc-devel syslinux-devel linux-api-headers
