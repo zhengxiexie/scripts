@@ -33,6 +33,10 @@ go install github.com/trzsz/trzsz-go/cmd/trz@latest
 go install github.com/trzsz/trzsz-go/cmd/tsz@latest
 go install github.com/trzsz/trzsz-go/cmd/trzsz@latest
 
+# Install Zoxide
+echo "Installing Zoxide..."
+curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+
 # Install Bat
 curl -o bat.zip -L https://github.com/sharkdp/bat/releases/download/v0.18.2/bat-v0.18.2-x86_64-unknown-linux-musl.tar.gz
 tar -xvzf bat.zip
