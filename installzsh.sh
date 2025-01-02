@@ -53,6 +53,7 @@ ${cmd} update -y
 echo "Installing required packages..."
 case "$ID" in
     ubuntu)
+        snap install go
         ${cmd} install -y wget gcc make  binutils rsync go git zsh zip
         ;;
     photon)
