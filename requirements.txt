@@ -2,4 +2,6 @@
 pytz==2022.7.1
 kubernetes==11.0.0
 paramiko~=3.0.0
-timeout-decorator
+timeout-decorator~=0.5.0
+requests~=2.32.3
+googletrans==4.0.0-rc1
