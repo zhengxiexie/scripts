@@ -28,6 +28,7 @@ tar -C /usr/local -xzf go1.23.1.linux-amd64.tar.gz
 echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.zshrc
 # shellcheck disable=SC2016
 echo 'export PATH=$PATH:/root/go/bin' >> ~/.zshrc
+echo 'export GOROOT=/usr/local/go' >> ~/.zshrc
 export PATH=$PATH:/usr/local/go/bin
 go install github.com/trzsz/trzsz-go/cmd/trz@latest
 go install github.com/trzsz/trzsz-go/cmd/tsz@latest
