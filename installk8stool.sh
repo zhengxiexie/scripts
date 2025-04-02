@@ -34,7 +34,7 @@ export PATH=$PATH:/usr/local/go/bin
 # Download and install trzsz tools
 wget -O trzsz.tar.gz https://github.com/trzsz/trzsz-go/releases/download/v1.1.5/trzsz_1.1.5_linux_x86_64.tar.gz
 tar -xzvf trzsz.tar.gz
-mv trz tsz trzsz /usr/local/bin/
+mv trz*/trz trz*/tsz trz*/trzsz /usr/local/bin/
 rm trzsz.tar.gz
 
 # Install Zoxide
