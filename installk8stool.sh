@@ -30,9 +30,9 @@ echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.zshrc
 echo 'export PATH=$PATH:/root/go/bin' >> ~/.zshrc
 echo 'export GOROOT=/usr/local/go' >> ~/.zshrc
 export PATH=$PATH:/usr/local/go/bin
-go install github.com/trzsz/trzsz-go/cmd/trz@latest
-go install github.com/trzsz/trzsz-go/cmd/tsz@latest
-go install github.com/trzsz/trzsz-go/cmd/trzsz@latest
+GOPROXY=https://packages.vcfd.broadcom.net/gocenter.io,direct; go install github.com/trzsz/trzsz-go/cmd/trz@latest
+GOPROXY=https://packages.vcfd.broadcom.net/gocenter.io,direct; go install github.com/trzsz/trzsz-go/cmd/tsz@latest
+GOPROXY=https://packages.vcfd.broadcom.net/gocenter.io,direct; go install github.com/trzsz/trzsz-go/cmd/trzsz@latest
 
 # Install Zoxide
 # echo "Installing Zoxide..."
