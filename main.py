@@ -37,8 +37,7 @@ def get_deployment(api):
 
 
 def get_pod_name():
-    _, pod_name = util.runcmd("kubectl get pods -l component=nsx-ncp -n vmware-system-nsx -o=jsonpath='{.items["
-                              "*].metadata.name}'")
+    _, pod_name = util.runcmd("""kubectl get pods -l component=nsx-ncp -n vmware-system-nsx -o=jsonpath="{.items[?(@.status.phase=='Running')].metadata.name}" """)
     log.info(pod_name)
     return pod_name
 
