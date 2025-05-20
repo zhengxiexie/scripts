@@ -51,6 +51,7 @@ def dump_ncp_ini():
         raise Exception("dump ncp ini from ncp configmap failed")
     res, _ = util.runcmd("kubectl exec %s -c nsx-ncp -n vmware-system-nsx -- cat /etc/nsx-ujo/vc/username > /etc/nsx-ujo/vc/username" % pod_name)
     res, _ = util.runcmd("kubectl exec %s -c nsx-ncp -n vmware-system-nsx -- cat /etc/nsx-ujo/vc/password > /etc/nsx-ujo/vc/password" % pod_name)
+    res, _ = util.runcmd("kubectl exec %s -c nsx-ncp -n vmware-system-nsx -- cat /etc/nsx-ujo/nsx_manager_certificate_0 > /etc/nsx-ujo/nsx_manager_certificate_0" % pod_name)
 
 
 @timeout_decorator.timeout(180, timeout_exception=StopIteration)
