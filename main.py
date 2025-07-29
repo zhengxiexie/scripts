@@ -1,8 +1,5 @@
 import sys
 import time
-import json
-import random
-import string
 import logger
 import util
 
@@ -77,13 +74,39 @@ def check_pod_status(api):
         return True
 
 
-def update_deployment(api, deployment, sleep=False):
+def update_deployment(api, deployment, hostname, sleep=False):
     if sleep:
         command = ["/bin/bash", "-c", "while true; do echo hello, world!; sleep 1; done"]
     else:
         command = ["/usr/local/bin/manager", "-nsxconfig", NCP_INI_FILE, "-health-probe-bind-address", ":8383", "-log-level", "2"]
     deployment.spec.template.spec.containers[1].command = command
     deployment.spec.template.spec.containers[1].liveness_probe.failure_threshold = 5000
+    container = deployment.spec.template.spec.containers[1]
+    nsx_operator_volume = client.V1Volume(
+        name='nsx-operator-volume',
+        host_path=client.V1HostPathVolumeSource(
+            path='/root/nsx-operator',
+            type='Directory'
+        )
+    )
+    if nsx_operator_volume not in deployment.spec.template.spec.volumes:
+        deployment.spec.template.spec.volumes.append(nsx_operator_volume)
+
+    nsx_operator_volume_mount = client.V1VolumeMount(
+        name='nsx-operator-volume',
+        mount_path='/root/nsx-operator'
+    )
+    if nsx_operator_volume_mount not in container.volume_mounts:
+        container.volume_mounts.append(nsx_operator_volume_mount)
+    deployment.spec.replicas = 1
+    
+    # Add nodeSelector configuration
+    deployment.spec.template.spec.node_selector = {
+        "node-role.kubernetes.io/control-plane": "",
+        "current": "current",
+        hostname: hostname
+    }
+    
     api.patch_namespaced_deployment(
         name=DEPLOYMENT_NAME, namespace=DEPLOYMENT_NAMESPACE, body=deployment
     )
@@ -96,16 +119,25 @@ def main():
 
     apps_v1 = client.AppsV1Api(api_client=client.ApiClient(configuration=c))
     core_v1 = client.CoreV1Api(api_client=client.ApiClient(configuration=c))
-    alpha_v1 = client.RbacAuthorizationV1Api(api_client=client.ApiClient(configuration=c))
 
     log.info("dump ncp.ini and username and password")
     dump_ncp_ini()
 
+    # Get node name dynamically using the hostname
+    _, hostname = util.runcmd("hostname")
+    hostname = hostname.strip()
+    log.info("got hostname: %s" % hostname)
+    
+    log.info("label node %s with current=current" % hostname)
+    cmd = "kubectl label node %s current=current" % hostname
+    _, stdout = util.runcmd(cmd)
+    log.info("node labeling result: %s" % stdout)
+
     log.info("patch nsx-ncp deployment")
     deployment = get_deployment(apps_v1)
-    # pass arg from command line
+    # pass arg from the command line
     sleep = True if int(sys.argv[1]) == 0 else False
-    update_deployment(apps_v1, deployment, sleep)
+    update_deployment(apps_v1, deployment, hostname, sleep)
 
     log.info("restart nsx-ncp deployment")
     cmd = "kubectl rollout restart deployment nsx-ncp -n nsx-system"
