@@ -1,0 +1,271 @@
+{
+  "job_name": "dev-nsxvpc",
+  "build_number": 7355,
+  "parameters": [
+    {
+      "name": "TERA_REF",
+      "value": "",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "PERFORCE_BRANCH",
+      "value": "main",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "SKIP_CLEANUP",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "SUPPORT_BUNDLES",
+      "value": true,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "OVA_BUILD",
+      "value": "ob-24871681",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "ASYNC_OVA_BUILD",
+      "value": "",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "VC_BUILD",
+      "value": "ob-24876732",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "ESX_BUILD",
+      "value": "ob-24876735",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "NSX_SETUP",
+      "value": true,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "SHORT_FORM_RUNNAME",
+      "value": true,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "SPHERELET_BUILD",
+      "value": "",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "NUM_MASTER_VM",
+      "value": "1",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "NO_OF_SUPERVISORS",
+      "value": "1",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "SCALE_OUT_CPVM",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "FORCE_K8S_VERSION",
+      "value": "",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "KEEP_TESTBED_HOURS",
+      "value": "168",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "TESTBED_POLICY",
+      "value": "DELETE_NEVER",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "DHCP_FIP",
+      "value": true,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "APPROVED_BUILDS_JSON_URL",
+      "value": "https://jenkins-vcfwcp.devops.broadcom.net/job/prod-integ-nsxvpc/lastSuccessfulBuild/artifact/builds.json",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "GUESTCLUSTER_SETUP",
+      "value": true,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "GC_OVA_BUILD",
+      "value": "",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "NSXT_BUILD",
+      "value": "ob-24886628",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "VDNET_BRANCH",
+      "value": "rtqa-staging",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "VDNET_COMMIT_ID",
+      "value": "",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "PERFORM_TEST_CLEANUP",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "NSX_MULTIPLE_MP",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "REPLACE_TLS_CERT",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "SKIP_VC_ESX_CLN_CHECK",
+      "value": "true",
+      "type": "WHideParameterValue"
+    },
+    {
+      "name": "DISABLE_NS_ISOLATION",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "NIMBUS_LOCATION",
+      "value": "LVN",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "WCP_BUILD",
+      "value": "ob-24871682",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "FEATURE_STATES",
+      "value": "WCP_Workload_Domain_Isolation=enabled,WCP_VPC_Network=enabled,WCP_Simplified_Enablement=enabled,WCP_VM_Reservations=enabled,PAIF_AcceleratorCapacityReservation=enabled,PAIF_CapacityVisualization=enabled",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "SUPERVISOR_CAPABILITIES",
+      "value": "",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "NUM_ESX",
+      "value": "",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "CLUSTER_ROUTED_MODE",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "CLUSTER_SUBNET_PREFIX",
+      "value": "",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "VLCM_CLUSTER",
+      "value": true,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "RUN_GCE2E",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "GCE2E_BRANCH",
+      "value": "origin/master",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "GCE2E_TEST_TAGS",
+      "value": "vmservice",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "GCE2E_TEST_FOCUS",
+      "value": "VM-VPC",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "SKIP_SYNC_TO_WCP_CLN",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "ENABLE_VSAN",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "CREATE_VSAN_DIRECT_DATASTORE",
+      "value": false,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "TESTS_TO_RUN",
+      "value": "none",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "TEST_GROUPS",
+      "value": "none",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "NSX_VDS_VERSION",
+      "value": "0",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "TKG_SVS_CONFIG_OVERRIDE",
+      "value": "vpc_supported: true\nworkload_domain_isolation_supported: true",
+      "type": "TextParameterValue"
+    },
+    {
+      "name": "NSX_VPC",
+      "value": true,
+      "type": "BooleanParameterValue"
+    },
+    {
+      "name": "NSX_LOAD_BALANCER",
+      "value": "nsx-lb",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "TGW_TYPE",
+      "value": "centralized",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "PRIVATE_INFRA",
+      "value": "PUBLIC",
+      "type": "StringParameterValue"
+    },
+    {
+      "name": "USE_INSTAPP",
+      "value": false,
+      "type": "BooleanParameterValue"
+    }
+  ]
+}
