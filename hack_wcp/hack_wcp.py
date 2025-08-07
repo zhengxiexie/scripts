@@ -8,8 +8,7 @@ providing functionality to update deployments, manage volumes, and monitor pod s
 import sys
 import time
 
-import logger
-import util
+from util import util
 from timeout_decorator import timeout_decorator
 from kubernetes import client, config
 from kubernetes.client.models.v1_container_image import V1ContainerImage
@@ -31,7 +30,7 @@ LIVENESS_PROBE_FAILURE_THRESHOLD = 5000
 NSX_OPERATOR_VOLUME_NAME = 'nsx-operator-volume'
 NSX_OPERATOR_HOST_PATH = '/root/nsx-operator'
 
-log = logger.get_logger(__name__)
+log = util.logger.get_logger(__name__)
 
 
 def _names_setter(self, vs):

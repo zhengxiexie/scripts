@@ -1,7 +1,7 @@
 import functools
 import time
 
-import logger
+from . import logger
 import subprocess
 import paramiko
 

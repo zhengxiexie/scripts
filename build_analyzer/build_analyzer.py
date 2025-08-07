@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 
 import re
-import os
 import sys
-import tempfile
-from urllib.parse import urlparse
 
-import logger
-import util
+from util import util
+from util.logger import get_logger
 
-log = logger.get_logger(__name__)
+log = get_logger(__name__)
 
 class BuildAnalyzer:
     def __init__(self):

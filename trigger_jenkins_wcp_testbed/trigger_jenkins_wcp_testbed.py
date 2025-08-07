@@ -5,11 +5,15 @@ Usage: python3 trigger_jenkins_job.py [--jenkins-token TOKEN] [--dry-run]
 python3 trigger_jenkins_job.py --jenkins-username xz037905 --jenkins-token 116d1f6040d9dafad15f7bcb5869a0a2c7
 """
 
-import json
 import requests
 import argparse
 import sys
-from urllib.parse import urljoin
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from util.logger import get_logger
+
+# Initialize logger
+logger = get_logger(__name__)
 
 # Jenkins configuration
 JENKINS_BASE_URL = "https://jenkins-vcf-wcp-dev.devops.broadcom.net"
@@ -56,7 +60,7 @@ JOB_PARAMETERS = {
     "VLCM_CLUSTER": True,
     "RUN_GCE2E": False,
     "GCE2E_BRANCH": "origin/master",
-    "GCE2E_TEST_TAGS": "vmservice",
+    "GCE2E_TEST_TAGS": "service",
     "GCE2E_TEST_FOCUS": "VM-VPC",
     "SKIP_SYNC_TO_WCP_CLN": False,
     "ENABLE_VSAN": False,
@@ -113,15 +117,15 @@ def get_jenkins_crumb(session, jenkins_username=None, jenkins_token=None):
                 
             if response.status_code == 200:
                 crumb_data = response.json()
-                print(f"Successfully authenticated using {auth_type} auth")
+                logger.info(f"Successfully authenticated using {auth_type} auth")
                 return crumb_data.get('crumb'), crumb_data.get('crumbRequestField', 'Jenkins-Crumb'), auth_type, auth_value
             else:
-                print(f"Warning: {auth_type} auth failed. Status: {response.status_code}")
+                logger.warning(f"{auth_type} auth failed. Status: {response.status_code}")
                 
         except Exception as e:
-            print(f"Warning: Error with {auth_type} auth: {e}")
+            logger.warning(f"Error with {auth_type} auth: {e}")
     
-    print("Warning: All authentication methods failed")
+    logger.warning("All authentication methods failed")
     return None, None, None, None
 
 def trigger_jenkins_job(jenkins_username=None, jenkins_token=None, dry_run=False):
@@ -142,57 +146,55 @@ def trigger_jenkins_job(jenkins_username=None, jenkins_token=None, dry_run=False
     # Add crumb to form data if available
     if crumb_value and crumb_field:
         form_data[crumb_field] = crumb_value
-        print(f"Using CSRF crumb: {crumb_field}")
+        logger.info(f"Using CSRF crumb: {crumb_field}")
     
-    print(f"Jenkins URL: {build_url}")
-    print(f"Job Name: {JOB_NAME}")
-    print(f"Number of parameters: {len(JOB_PARAMETERS)}")
+    logger.info(f"Jenkins URL: {build_url}")
+    logger.info(f"Job Name: {JOB_NAME}")
+    logger.info(f"Number of parameters: {len(JOB_PARAMETERS)}")
     
     if dry_run:
-        print("\n=== DRY RUN MODE ===")
-        print("Would send the following parameters:")
+        logger.info("\n=== DRY RUN MODE ===")
+        logger.info("Would send the following parameters:")
         for key, value in form_data.items():
             if key != crumb_field:  # Don't print the crumb value
-                print(f"  {key}: {value}")
-        print(f"\nAuthentication method: {auth_type}")
+                logger.info(f"  {key}: {value}")
+        logger.info(f"\nAuthentication method: {auth_type}")
         if crumb_value:
-            print(f"Crumb field '{crumb_field}' included in form data")
+            logger.info(f"Crumb field '{crumb_field}' included in form data")
         return True
     
     try:
-        print("\nTriggering Jenkins job...")
+        logger.info("\nTriggering Jenkins job...")
         
-        # Send request using the same authentication method that worked for crumb
+        # Send a request using the same authentication method that worked for crumb
         if auth_type == "basic":
             response = session.post(build_url, auth=auth_value, data=form_data, timeout=30)
         elif auth_type == "bearer":
             headers = {"Authorization": auth_value}
             response = session.post(build_url, headers=headers, data=form_data, timeout=30)
         else:
-            print("❌ No valid authentication method found")
+            logger.error("❌ No valid authentication method found")
             return False
         
-        print(f"Response Status: {response.status_code}")
+        logger.info(f"Response Status: {response.status_code}")
         
         if response.status_code == 201:
-            print("✅ Job triggered successfully!")
+            logger.info("✅ Job triggered successfully!")
             location = response.headers.get('Location')
             if location:
-                print(f"Queue item location: {location}")
+                logger.info(f"Queue item location: {location}")
         elif response.status_code == 200:
-            print("✅ Job triggered successfully (status 200)!")
+            logger.info("✅ Job triggered successfully (status 200)!")
         else:
-            print(f"❌ Failed to trigger job. Status code: {response.status_code}")
-            print(f"Response body: {response.text}")
+            logger.error(f"❌ Failed to trigger job. Status code: {response.status_code}")
+            logger.error(f"Response body: {response.text}")
             return False
             
     except requests.exceptions.RequestException as e:
-        print(f"❌ Error making request: {e}")
+        logger.error(f"❌ Error making request: {e}")
         return False
     finally:
         session.close()
-    
-    return True
 
 def main():
     parser = argparse.ArgumentParser(description="Trigger Jenkins job 'dev-nsxvpc' with memorized parameters")
@@ -204,12 +206,12 @@ def main():
     args = parser.parse_args()
     
     if args.show_config:
-        print("=== Memorized Jenkins Job Configuration ===")
-        print(f"Job Name: {JOB_NAME}")
-        print(f"Jenkins URL: {JENKINS_BASE_URL}")
-        print("\nParameters:")
+        logger.info("=== Memorized Jenkins Job Configuration ===")
+        logger.info(f"Job Name: {JOB_NAME}")
+        logger.info(f"Jenkins URL: {JENKINS_BASE_URL}")
+        logger.info("\nParameters:")
         for key, value in JOB_PARAMETERS.items():
-            print(f"  {key}: {value}")
+            logger.info(f"  {key}: {value}")
         return
     
     success = trigger_jenkins_job(jenkins_username=args.jenkins_username, jenkins_token=args.jenkins_token, dry_run=args.dry_run)
