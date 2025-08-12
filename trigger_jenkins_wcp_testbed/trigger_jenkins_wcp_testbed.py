@@ -42,7 +42,7 @@ JOB_PARAMETERS = {
     "APPROVED_BUILDS_JSON_URL": "https://jenkins-vcfwcp.devops.broadcom.net/job/prod-integ-nsxvpc/lastSuccessfulBuild/artifact/builds.json",
     "GUESTCLUSTER_SETUP": True,
     "GC_OVA_BUILD": "",
-    "NSXT_BUILD": "ob-24886628",
+    # "NSXT_BUILD": "ob-24886628",
     "VDNET_BRANCH": "rtqa-staging",
     "VDNET_COMMIT_ID": "",
     "PERFORM_TEST_CLEANUP": False,

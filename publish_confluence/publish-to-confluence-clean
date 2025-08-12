@@ -1,0 +1,336 @@
+#!/usr/bin/env python3
+"""
+Confluence Publisher - A tool to publish markdown documents to Confluence
+This version handles tables better by cleaning up XML macros
+
+Usage:
+    publish-to-confluence-clean <markdown-file> [options]
+    
+Options:
+    -s, --space SPACE       Confluence space key (default: NSBU)
+    -p, --parent ID         Parent page ID (optional)
+    -t, --title TITLE       Page title (optional, defaults to filename)
+    -u, --update ID         Update existing page with this ID
+    --url URL              Confluence URL (default: https://vmw-confluence.broadcom.net)
+    -h, --help             Show this help message
+
+Environment:
+    CONFLUENCE_TOKEN       Required: Your Confluence Bearer token
+
+Author: Xie Zheng
+Version: 2.0.0
+"""
+
+import os
+import sys
+import json
+import argparse
+import requests
+import subprocess
+from pathlib import Path
+from datetime import datetime
+import tempfile
+import re
+
+class ConfluencePublisher:
+    def __init__(self, confluence_url=None, token=None):
+        self.confluence_url = confluence_url or os.environ.get('CONFLUENCE_URL', 'https://vmw-confluence.broadcom.net')
+        self.token = token or os.environ.get('CONFLUENCE_TOKEN')
+        
+        if not self.token:
+            raise ValueError("CONFLUENCE_TOKEN environment variable is required")
+        
+        self.headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    
+    def clean_confluence_macros(self, content):
+        """Remove Confluence XML macros and clean up the content"""
+        # Remove structured macro tags
+        content = re.sub(r'<ac:structured-macro[^>]*>.*?</ac:structured-macro>', '', content, flags=re.DOTALL)
+        content = re.sub(r'<ac:parameter[^>]*>.*?</ac:parameter>', '', content, flags=re.DOTALL)
+        content = re.sub(r'<ac:plain-text-body[^>]*>.*?</ac:plain-text-body>', '', content, flags=re.DOTALL)
+        
+        # Clean up any remaining ac: tags
+        content = re.sub(r'</?ac:[^>]*>', '', content)
+        
+        # Clean up excessive whitespace
+        content = re.sub(r'\n{3,}', '\n\n', content)
+        
+        return content
+    
+    def convert_markdown_to_storage(self, markdown_file):
+        """Convert markdown to Confluence storage format"""
+        # Check if pandoc is installed
+        try:
+            subprocess.run(['pandoc', '--version'], capture_output=True, check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("Error: pandoc is not installed. Please install it first:")
+            print("  brew install pandoc")
+            sys.exit(1)
+        
+        # Read the markdown file
+        with open(markdown_file, 'r', encoding='utf-8') as f:
+            markdown_content = f.read()
+        
+        # Pre-process markdown to handle special cases
+        markdown_content = self.preprocess_markdown(markdown_content)
+        
+        # Create temporary file for preprocessed content
+        with tempfile.NamedTemporaryFile(mode='w+', suffix='.md', delete=False) as tmp_md:
+            tmp_md.write(markdown_content)
+            tmp_md_path = tmp_md.name
+        
+        # Create temporary file for converted content
+        with tempfile.NamedTemporaryFile(mode='w+', suffix='.html', delete=False) as tmp_html:
+            tmp_html_path = tmp_html.name
+        
+        try:
+            # Convert using pandoc to HTML first
+            cmd = ['pandoc', tmp_md_path, '-f', 'markdown', '-t', 'html', '--no-highlight', '-o', tmp_html_path]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                print(f"Error converting markdown: {result.stderr}")
+                return None
+            
+            # Read converted content
+            with open(tmp_html_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+            
+            # Convert HTML to Confluence storage format
+            storage_content = self.html_to_confluence_storage(html_content)
+            
+            return storage_content
+        finally:
+            # Clean up temp files
+            if os.path.exists(tmp_md_path):
+                os.unlink(tmp_md_path)
+            if os.path.exists(tmp_html_path):
+                os.unlink(tmp_html_path)
+    
+    def preprocess_markdown(self, content):
+        """Preprocess markdown to handle special cases"""
+        # Fix any HTML entities in markdown
+        content = content.replace('&lt;', '<')
+        content = content.replace('&gt;', '>')
+        content = content.replace('&amp;', '&')
+        
+        # Ensure proper spacing around tables
+        lines = content.split('\n')
+        processed_lines = []
+        in_table = False
+        
+        for i, line in enumerate(lines):
+            # Check if line is a table row
+            if '|' in line and line.strip().startswith('|'):
+                if not in_table:
+                    # Add blank line before table if needed
+                    if i > 0 and processed_lines and processed_lines[-1].strip():
+                        processed_lines.append('')
+                    in_table = True
+                processed_lines.append(line)
+            else:
+                if in_table:
+                    # Add blank line after table if needed
+                    if line.strip():
+                        processed_lines.append('')
+                    in_table = False
+                processed_lines.append(line)
+        
+        return '\n'.join(processed_lines)
+    
+    def html_to_confluence_storage(self, html):
+        """Convert HTML to Confluence storage format"""
+        # Basic HTML to Confluence storage format conversions
+        storage = html
+        
+        # Don't double-wrap tbody if it already exists
+        if '<tbody>' not in storage:
+            storage = re.sub(r'<table>', '<table><tbody>', storage)
+            storage = re.sub(r'</table>', '</tbody></table>', storage)
+        
+        # Convert code blocks to Confluence format
+        # Extract code blocks and process them separately to avoid CDATA issues
+        def process_code_block(match):
+            code_content = match.group(2) if match.lastindex >= 2 else match.group(1)
+            # Escape ]]> in code content to prevent CDATA issues
+            code_content = code_content.replace(']]>', ']]]]><![CDATA[>')
+            
+            if match.lastindex >= 2:  # Has language class
+                lang = match.group(1)
+                return f'<ac:structured-macro ac:name="code"><ac:parameter ac:name="language">{lang}</ac:parameter><ac:plain-text-body><![CDATA[{code_content}]]></ac:plain-text-body></ac:structured-macro>'
+            else:
+                return f'<ac:structured-macro ac:name="code"><ac:plain-text-body><![CDATA[{code_content}]]></ac:plain-text-body></ac:structured-macro>'
+        
+        # Process code blocks with language
+        storage = re.sub(r'<pre><code class="language-([^"]*)">([\s\S]*?)</code></pre>', process_code_block, storage)
+        # Process generic code blocks
+        storage = re.sub(r'<pre><code>([\s\S]*?)</code></pre>', lambda m: process_code_block(m), storage)
+        
+        # Keep inline code as is
+        # storage = re.sub(r'<code>([^<]+)</code>', r'<code>\1</code>', storage)
+        
+        # Don't wrap blockquotes if they already have p tags
+        storage = re.sub(r'<blockquote>\s*(?!<p>)', '<blockquote><p>', storage)
+        storage = re.sub(r'(?<!p>)\s*</blockquote>', '</p></blockquote>', storage)
+        
+        return storage
+    
+    def get_page(self, page_id):
+        """Get page information"""
+        response = requests.get(
+            f"{self.confluence_url}/rest/api/content/{page_id}?expand=version,ancestors",
+            headers=self.headers
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        return None
+    
+    def create_page(self, title, content, space_key, parent_id=None):
+        """Create a new Confluence page"""
+        payload = {
+            'type': 'page',
+            'title': title,
+            'space': {'key': space_key},
+            'body': {
+                'storage': {
+                    'value': content,
+                    'representation': 'storage'
+                }
+            }
+        }
+        
+        if parent_id:
+            payload['ancestors'] = [{'id': parent_id}]
+        
+        response = requests.post(
+            f"{self.confluence_url}/rest/api/content",
+            headers=self.headers,
+            data=json.dumps(payload)
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error creating page: {response.status_code}")
+            print(response.text[:500])
+            return None
+    
+    def update_page(self, page_id, content, title=None):
+        """Update an existing Confluence page"""
+        # Get current page info
+        page = self.get_page(page_id)
+        if not page:
+            print(f"Error: Could not fetch page {page_id}")
+            return None
+        
+        current_version = page['version']['number']
+        page_title = title or page['title']
+        
+        payload = {
+            'version': {
+                'number': current_version + 1
+            },
+            'title': page_title,
+            'type': 'page',
+            'body': {
+                'storage': {
+                    'value': content,
+                    'representation': 'storage'
+                }
+            }
+        }
+        
+        response = requests.put(
+            f"{self.confluence_url}/rest/api/content/{page_id}",
+            headers=self.headers,
+            data=json.dumps(payload)
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error updating page: {response.status_code}")
+            print(response.text[:500])
+            return None
+    
+    def publish(self, markdown_file, space_key='NSBU', parent_id=None, title=None, update_id=None):
+        """Main publish method"""
+        markdown_path = Path(markdown_file)
+        
+        if not markdown_path.exists():
+            print(f"Error: File not found: {markdown_file}")
+            return False
+        
+        # Default title from filename if not provided
+        if not title and not update_id:
+            title = markdown_path.stem.replace('-', ' ').replace('_', ' ').title()
+        
+        print(f"📄 Processing: {markdown_path.name}")
+        print(f"🔄 Converting markdown to Confluence storage format...")
+        
+        # Convert markdown to storage format
+        storage_content = self.convert_markdown_to_storage(markdown_path)
+        if not storage_content:
+            return False
+        
+        print("✅ Conversion complete")
+        
+        # Update or create page
+        if update_id:
+            print(f"📝 Updating page ID: {update_id}")
+            result = self.update_page(update_id, storage_content, title)
+            action = "updated"
+        else:
+            print(f"📝 Creating new page: {title}")
+            result = self.create_page(title, storage_content, space_key, parent_id)
+            action = "created"
+        
+        if result:
+            print(f"\n✅ Page {action} successfully!")
+            print(f"📍 Title: {result.get('title', 'N/A')}")
+            print(f"🆔 Page ID: {result.get('id', 'N/A')}")
+            
+            # Construct page URL
+            page_url = f"{self.confluence_url}/pages/viewpage.action?pageId={result.get('id', '')}"
+            print(f"🔗 View at: {page_url}")
+            return True
+        else:
+            print(f"\n❌ Failed to {action[:-1]} page")
+            return False
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Publish markdown documents to Confluence',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    parser.add_argument('markdown_file', help='Path to markdown file')
+    parser.add_argument('-s', '--space', default='NSBU', help='Confluence space key')
+    parser.add_argument('-p', '--parent', help='Parent page ID')
+    parser.add_argument('-t', '--title', help='Page title')
+    parser.add_argument('-u', '--update', help='Update existing page with this ID')
+    parser.add_argument('--url', help='Confluence URL')
+    
+    args = parser.parse_args()
+    
+    try:
+        publisher = ConfluencePublisher(confluence_url=args.url)
+        success = publisher.publish(
+            markdown_file=args.markdown_file,
+            space_key=args.space,
+            parent_id=args.parent,
+            title=args.title,
+            update_id=args.update
+        )
+        sys.exit(0 if success else 1)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()

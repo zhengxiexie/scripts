@@ -1,0 +1,281 @@
+#!/usr/bin/env python3
+"""
+Confluence Publisher - A tool to publish markdown documents to Confluence
+
+Usage:
+    publish-to-confluence <markdown-file> [options]
+    
+Options:
+    -s, --space SPACE       Confluence space key (default: NSBU)
+    -p, --parent ID         Parent page ID (optional)
+    -t, --title TITLE       Page title (optional, defaults to filename)
+    -u, --update ID         Update existing page with this ID
+    --url URL              Confluence URL (default: https://vmw-confluence.broadcom.net)
+    --pandoc-format FORMAT  Pandoc output format (default: jira)
+    -h, --help             Show this help message
+
+Environment:
+    CONFLUENCE_TOKEN       Required: Your Confluence Bearer token
+    CONFLUENCE_URL         Optional: Override default Confluence URL
+    CONFLUENCE_SPACE       Optional: Default space key
+
+Examples:
+    # Create new page from markdown
+    publish-to-confluence README.md -s NSBU -t "My Documentation"
+    
+    # Update existing page
+    publish-to-confluence doc.md --update 2264969038
+    
+    # Create as child of another page
+    publish-to-confluence spec.md -p 2142094878 -t "API Specification"
+
+Author: Xie Zheng
+Version: 1.0.0
+"""
+
+import os
+import sys
+import json
+import argparse
+import requests
+import subprocess
+from pathlib import Path
+from datetime import datetime
+import tempfile
+
+class ConfluencePublisher:
+    def __init__(self, confluence_url=None, token=None):
+        self.confluence_url = confluence_url or os.environ.get('CONFLUENCE_URL', 'https://vmw-confluence.broadcom.net')
+        self.token = token or os.environ.get('CONFLUENCE_TOKEN')
+        
+        if not self.token:
+            raise ValueError("CONFLUENCE_TOKEN environment variable is required")
+        
+        self.headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    
+    def convert_markdown_to_wiki(self, markdown_file, pandoc_format='jira'):
+        """Convert markdown to Confluence wiki format using pandoc"""
+        # Check if pandoc is installed
+        try:
+            subprocess.run(['pandoc', '--version'], capture_output=True, check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("Error: pandoc is not installed. Please install it first:")
+            print("  brew install pandoc")
+            sys.exit(1)
+        
+        # Create temporary file for converted content
+        with tempfile.NamedTemporaryFile(mode='w+', suffix='.txt', delete=False) as tmp_file:
+            tmp_path = tmp_file.name
+        
+        try:
+            # Convert using pandoc
+            cmd = ['pandoc', str(markdown_file), '-f', 'markdown', '-t', pandoc_format, '-o', tmp_path]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                print(f"Error converting markdown: {result.stderr}")
+                return None
+            
+            # Read converted content
+            with open(tmp_path, 'r', encoding='utf-8') as f:
+                wiki_content = f.read()
+            
+            return wiki_content
+        finally:
+            # Clean up temp file
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+    
+    def get_page(self, page_id):
+        """Get page information"""
+        response = requests.get(
+            f"{self.confluence_url}/rest/api/content/{page_id}?expand=version,ancestors",
+            headers=self.headers
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        return None
+    
+    def create_page(self, title, content, space_key, parent_id=None):
+        """Create a new Confluence page"""
+        payload = {
+            'type': 'page',
+            'title': title,
+            'space': {'key': space_key},
+            'body': {
+                'wiki': {
+                    'value': content,
+                    'representation': 'wiki'
+                }
+            }
+        }
+        
+        if parent_id:
+            payload['ancestors'] = [{'id': parent_id}]
+        
+        response = requests.post(
+            f"{self.confluence_url}/rest/api/content",
+            headers=self.headers,
+            data=json.dumps(payload)
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error creating page: {response.status_code}")
+            print(response.text[:500])
+            return None
+    
+    def update_page(self, page_id, content, title=None):
+        """Update an existing Confluence page"""
+        # Get current page info
+        page = self.get_page(page_id)
+        if not page:
+            print(f"Error: Could not fetch page {page_id}")
+            return None
+        
+        current_version = page['version']['number']
+        page_title = title or page['title']
+        
+        payload = {
+            'version': {
+                'number': current_version + 1
+            },
+            'title': page_title,
+            'type': 'page',
+            'body': {
+                'wiki': {
+                    'value': content,
+                    'representation': 'wiki'
+                }
+            }
+        }
+        
+        response = requests.put(
+            f"{self.confluence_url}/rest/api/content/{page_id}",
+            headers=self.headers,
+            data=json.dumps(payload)
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error updating page: {response.status_code}")
+            print(response.text[:500])
+            return None
+    
+    def publish(self, markdown_file, space_key='NSBU', parent_id=None, title=None, update_id=None, pandoc_format='jira'):
+        """Main publish method"""
+        markdown_path = Path(markdown_file)
+        
+        if not markdown_path.exists():
+            print(f"Error: File not found: {markdown_file}")
+            return False
+        
+        # Default title from filename if not provided
+        if not title and not update_id:
+            title = markdown_path.stem.replace('-', ' ').replace('_', ' ').title()
+            # Add timestamp to avoid duplicates
+            title += f" ({datetime.now().strftime('%Y-%m-%d %H:%M')})"
+        
+        print(f"📄 Processing: {markdown_path.name}")
+        print(f"🔄 Converting with pandoc (format: {pandoc_format})...")
+        
+        # Convert markdown to wiki format
+        wiki_content = self.convert_markdown_to_wiki(markdown_path, pandoc_format)
+        if not wiki_content:
+            return False
+        
+        print("✅ Conversion complete")
+        
+        # Update or create page
+        if update_id:
+            print(f"📝 Updating page ID: {update_id}")
+            result = self.update_page(update_id, wiki_content, title)
+            action = "updated"
+        else:
+            print(f"📝 Creating new page: {title}")
+            if parent_id:
+                print(f"   Under parent ID: {parent_id}")
+            result = self.create_page(title, wiki_content, space_key, parent_id)
+            action = "created"
+        
+        if result:
+            page_id = result['id']
+            page_title = result['title']
+            print(f"\n✅ Page {action} successfully!")
+            print(f"📍 Title: {page_title}")
+            print(f"🆔 Page ID: {page_id}")
+            print(f"🔗 View at: {self.confluence_url}/pages/viewpage.action?pageId={page_id}")
+            return True
+        
+        return False
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Publish markdown documents to Confluence',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Create new page from markdown
+  %(prog)s README.md -s NSBU -t "My Documentation"
+  
+  # Update existing page
+  %(prog)s doc.md --update 2264969038
+  
+  # Create as child of another page
+  %(prog)s spec.md -p 2142094878 -t "API Specification"
+
+Environment Variables:
+  CONFLUENCE_TOKEN  - Required: Your Confluence Bearer token
+  CONFLUENCE_URL    - Optional: Override default Confluence URL
+  CONFLUENCE_SPACE  - Optional: Default space key
+        """
+    )
+    
+    parser.add_argument('markdown_file', help='Markdown file to publish')
+    parser.add_argument('-s', '--space', 
+                        default=os.environ.get('CONFLUENCE_SPACE', 'NSBU'),
+                        help='Confluence space key (default: NSBU or $CONFLUENCE_SPACE)')
+    parser.add_argument('-p', '--parent', help='Parent page ID (optional)')
+    parser.add_argument('-t', '--title', help='Page title (optional)')
+    parser.add_argument('-u', '--update', help='Update existing page with this ID')
+    parser.add_argument('--url', help='Confluence URL (overrides $CONFLUENCE_URL)')
+    parser.add_argument('--pandoc-format', default='jira',
+                        choices=['jira', 'mediawiki', 'html', 'docbook'],
+                        help='Pandoc output format (default: jira)')
+    
+    args = parser.parse_args()
+    
+    try:
+        publisher = ConfluencePublisher(confluence_url=args.url)
+        success = publisher.publish(
+            markdown_file=args.markdown_file,
+            space_key=args.space,
+            parent_id=args.parent,
+            title=args.title,
+            update_id=args.update,
+            pandoc_format=args.pandoc_format
+        )
+        
+        sys.exit(0 if success else 1)
+        
+    except ValueError as e:
+        print(f"Error: {e}")
+        print("\nPlease set CONFLUENCE_TOKEN environment variable:")
+        print("  export CONFLUENCE_TOKEN='your-token-here'")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\n\nCancelled by user")
+        sys.exit(130)
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()
