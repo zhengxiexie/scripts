@@ -16,6 +16,9 @@ Create a professional pull request from the current branch with automated diff a
 
 ### Steps
 
+#### 0. Combine bug info as a bug info background
+`{{bug_info}}`
+
 #### 1. Pre-flight Configuration
 
 ```sh
@@ -55,6 +58,7 @@ curl -s "https://api.github.com/repos/vmware-tanzu/nsx-operator/pulls/1127" | \
 # Create PR description based on template and changes
 echo Generated PR description and output to /tmp/pr_description.txt
 ```
+Beautify the pr_description with the template of /tmp/pr_template.txt
 
 #### 4. Push to Remote 'zx' Repository
 
@@ -75,10 +79,7 @@ gh pr create \
   --head $current_branch \
   --title "$(git log -1 --pretty=%s)" \
   --body-file /tmp/pr_description.txt \
-  --web
 
-# Alternative: Create PR interactively if template needs manual editing
-# gh pr create --web
 ```
 
 #### 6. Post-Creation Verification

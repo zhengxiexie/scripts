@@ -9,6 +9,13 @@
 - (Optional: `{{bug_id}}` for API requests)
 
 **Steps:**
+0. **Obtain the bug token:**
+```sh
+curl -X POST "https://bugzilla-rest.lvn.broadcom.net/rest/v1/token" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "xz037905", "password": "p#nx5G%Now4sgBzf$T8"}'
+{"issued_at": "2025-08-14T01:13:23.990473", "token_type": "Bearer", "expired_in": 604800, "accesstoken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3NTUxMzQwMDMsInN1YiI6Inh6MDM3OTA1IiwiZXhwIjoxNzU1NzM4ODAzfQ.-fR8hqvTh-SiGvEcSZlTkS97HwTYy1IMWLQvLUSB9vY"}
+```
 1. **Obtain the bug information:**
     - Use the Bugzilla REST API to fetch bug details and comments.
     - Example API calls (using a valid token):

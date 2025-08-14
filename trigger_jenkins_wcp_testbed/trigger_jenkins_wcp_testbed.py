@@ -27,7 +27,7 @@ JOB_PARAMETERS = {
     "SUPPORT_BUNDLES": True,
     "OVA_BUILD": "ob-24871681",
     "ASYNC_OVA_BUILD": "",
-    "VC_BUILD": "ob-24876732",
+    # "VC_BUILD": "ob-24876732",
     "ESX_BUILD": "ob-24876735",
     "NSX_SETUP": True,
     "SHORT_FORM_RUNNAME": True,
