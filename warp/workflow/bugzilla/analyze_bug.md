@@ -9,7 +9,7 @@
 - (Optional: `{{bug_id}}` for API requests)
 
 **Steps:**
-0. **Obtain the bug token:**
+1. **Obtain the bug token:**
 ```sh
 curl -X POST "https://bugzilla-rest.lvn.broadcom.net/rest/v1/token" \
   -H "Content-Type: application/json" \

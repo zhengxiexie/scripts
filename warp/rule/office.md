@@ -64,8 +64,9 @@ curl -X GET "https://bugzilla-rest.lvn.broadcom.net/rest/v1/bug/<BUG_ID>/getcomm
 **Read (GET example):**
 
 ```sh
+get token from env CONFLUENCE_TOKEN
 curl -X GET \
-  -H "Authorization: Bearer NTg0NzE4NTEzMzg3OlS0wyenP/YXic/iylaCSMjRp4u2" \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
   -H "Accept: application/json" \
   "https://vmw-confluence.broadcom.net/display/<SPACE>/<PAGE_TITLE>"
 ```
