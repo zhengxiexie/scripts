@@ -7,27 +7,16 @@ Create a professional pull request from the current branch with automated diff a
 
 ***
 
-### Prerequisites
-- Ensure `gh` CLI is configured with proper pager settings[1]
-- Authentication with GitHub via `gh auth login`[2]
-- The current branch has committed changes ready for PR
-
-***
-
 ### Steps
 
 #### 0. Combine bug info as a bug info background
-`{{bug_info}}`
+Analyze `{{bug_info}}` using workflow in warp as the bug background description to attach in PR.
 
 #### 1. Pre-flight Configuration
+- Ensure `gh` CLI is configured with proper pager settings[1]After the job is done, revert it.
+- Authentication with GitHub via `gh auth login`[2]
+- The current branch has committed changes ready for PR
 
-```sh
-# Configure gh CLI for non-interactive output
-gh config set pager cat
-
-# Ensure git doesn't paginate output
-git config --global core.pager cat
-```
 
 #### 2. Analyze Current Branch and Generate Diff
 

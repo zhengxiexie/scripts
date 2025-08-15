@@ -26,7 +26,7 @@ improving productivity and usability in the terminal.
 
 
 ## 2. Pager Behavior (gh & git) 
-Use `gh config set pager cat`,  this avoids paginated output, ensuring compatibility with scriptable workflows.
+Use `gh config set pager cat`,  this avoids paginated output, ensuring compatibility with scriptable workflows. After the job is done, revert it.
 
 ## 3. GitHub & Pull Requests
 When push to remote branch, always push PR branches to `zx`, NOT `origin`.
