@@ -39,15 +39,7 @@ cat /tmp/diff_summary.txt
 
 #### 3. Fetch PR Template and Draft Description
 
-```sh
-# Fetch PR template from reference GitHub URL
-curl -s "https://api.github.com/repos/vmware-tanzu/nsx-operator/pulls/1127" | \
-  jq -r '.body' > /tmp/pr_template.txt
-
-# Create PR description based on template and changes
-echo Generated PR description and output to /tmp/pr_description.txt
-```
-Beautify the pr_description with the template of /tmp/pr_template.txt
+Beautify the pr_description with the template of ~/Code/scripts/warp/template/pr_template.md
 
 #### 4. Push to Remote 'zx' Repository
 
