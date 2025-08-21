@@ -88,3 +88,15 @@ python /Users/zhengxie/Code/scripts/build_analyzer.py vc ob-24838820
 ```
 - **Integrate with modern CLI tools as needed**.
 - For log searching/parsing, use `rg`, `fd`, and `bat` for enhanced logs.
+
+##  5. JIRA Page Automation
+
+**Read (GET example):**
+
+```sh
+get token from env JIRA_TOKEN
+curl -X GET \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -H "Accept: application/json" \
+  "https://vmw-jira.broadcom.net/browse/<PAGE_TITLE>"
+```
