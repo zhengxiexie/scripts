@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """
-Script to trigger Jenkins job 'dev-nsxvpc' with the same parameters as build #7355
-Usage: python3 trigger_jenkins_job.py [--jenkins-token TOKEN] [--dry-run]
-python3 trigger_jenkins_job.py --jenkins-username xz037905 --jenkins-token 116d1f6040d9dafad15f7bcb5869a0a2c7
+Trigger Jenkins job 'dev-nsxvpc'. Optionally sync parameters from a specific build (e.g., 8454).
 """
 
 import requests
@@ -19,15 +17,15 @@ logger = get_logger(__name__)
 JENKINS_BASE_URL = "https://jenkins-vcf-wcp-dev.devops.broadcom.net"
 JOB_NAME = "dev-nsxvpc"
 
-# Job parameters from build #7355
+# Job parameters synced from build #8454
 JOB_PARAMETERS = {
     "TERA_REF": "",
     "PERFORCE_BRANCH": "main",
-    "SKIP_CLEANUP": False,
+    "SKIP_CLEANUP": True,
     "SUPPORT_BUNDLES": True,
     "OVA_BUILD": "ob-24871681",
     "ASYNC_OVA_BUILD": "",
-    # "VC_BUILD": "ob-24876732",
+    "VC_BUILD": "ob-24876732",
     "ESX_BUILD": "ob-24876735",
     "NSX_SETUP": True,
     "SHORT_FORM_RUNNAME": True,
@@ -40,9 +38,11 @@ JOB_PARAMETERS = {
     "TESTBED_POLICY": "DELETE_NEVER",
     "DHCP_FIP": True,
     "APPROVED_BUILDS_JSON_URL": "https://jenkins-vcfwcp.devops.broadcom.net/job/prod-integ-nsxvpc/lastSuccessfulBuild/artifact/builds.json",
-    "GUESTCLUSTER_SETUP": True,
+    "GUESTCLUSTER_SETUP": False,
     "GC_OVA_BUILD": "",
-    # "NSXT_BUILD": "ob-24886628",
+    "NSXT_BUILD": "ob-24925967",
+    # "NSXT_BUILD": "ob-24942127",
+    "VDNET_LAUNCHER_OVF": "vdnet-launcher-ubuntu2004-v6",
     "VDNET_BRANCH": "rtqa-staging",
     "VDNET_COMMIT_ID": "",
     "PERFORM_TEST_CLEANUP": False,
@@ -60,15 +60,15 @@ JOB_PARAMETERS = {
     "VLCM_CLUSTER": True,
     "RUN_GCE2E": False,
     "GCE2E_BRANCH": "origin/master",
-    "GCE2E_TEST_TAGS": "service",
+    "GCE2E_TEST_TAGS": "vmservice",
     "GCE2E_TEST_FOCUS": "VM-VPC",
     "SKIP_SYNC_TO_WCP_CLN": False,
     "ENABLE_VSAN": False,
     "CREATE_VSAN_DIRECT_DATASTORE": False,
-    "TESTS_TO_RUN": "none",
-    "TEST_GROUPS": "none",
+    "TESTS_TO_RUN": "None",
+    "TEST_GROUPS": "",
     "NSX_VDS_VERSION": "0",
-    "TKG_SVS_CONFIG_OVERRIDE": "vpc_supported: true\nworkload_domain_isolation_supported: true",
+    "TKG_SVS_CONFIG_OVERRIDE": "",
     "NSX_VPC": True,
     "NSX_LOAD_BALANCER": "nsx-lb",
     "TGW_TYPE": "centralized",
@@ -76,21 +76,6 @@ JOB_PARAMETERS = {
     "USE_INSTAPP": False
 }
 
-def format_parameters_for_jenkins(parameters):
-    """Convert parameters to Jenkins REST API format"""
-    json_params = []
-    for key, value in parameters.items():
-        if isinstance(value, bool):
-            json_params.append({
-                "name": key,
-                "value": value
-            })
-        else:
-            json_params.append({
-                "name": key,
-                "value": str(value)
-            })
-    return json_params
 
 def get_jenkins_crumb(session, jenkins_username=None, jenkins_token=None):
     """Get Jenkins CSRF crumb for authentication using session"""
@@ -128,7 +113,34 @@ def get_jenkins_crumb(session, jenkins_username=None, jenkins_token=None):
     logger.warning("All authentication methods failed")
     return None, None, None, None
 
-def trigger_jenkins_job(jenkins_username=None, jenkins_token=None, dry_run=False):
+def fetch_parameters_from_build(session, build_number, auth_type, auth_value):
+    """Fetch parameters from a specific Jenkins build"""
+    url = f"{JENKINS_BASE_URL}/job/{JOB_NAME}/{build_number}/api/json?tree=actions[parameters[name,value]]"
+    try:
+        if auth_type == "basic":
+            resp = session.get(url, auth=auth_value, timeout=20)
+        elif auth_type == "bearer":
+            headers = {"Authorization": auth_value}
+            resp = session.get(url, headers=headers, timeout=20)
+        else:
+            logger.error("No valid authentication method to fetch build parameters")
+            return None
+        if resp.status_code != 200:
+            logger.error(f"Failed to fetch build parameters. Status: {resp.status_code}")
+            return None
+        data = resp.json()
+        params = {}
+        for action in data.get("actions", []):
+            for p in (action.get("parameters", []) or []):
+                params[p.get("name")] = p.get("value")
+        if not params:
+            logger.warning("No parameters found on the specified build")
+        return params
+    except Exception as e:
+        logger.error(f"Error fetching build parameters: {e}")
+        return None
+
+def trigger_jenkins_job(jenkins_username=None, jenkins_token=None, dry_run=False, override_params=None):
     """Trigger the Jenkins job with the specified parameters"""
     
     # Create a session to maintain cookies
@@ -141,7 +153,7 @@ def trigger_jenkins_job(jenkins_username=None, jenkins_token=None, dry_run=False
     crumb_value, crumb_field, auth_type, auth_value = get_jenkins_crumb(session, jenkins_username, jenkins_token)
     
     # Prepare form data with job parameters
-    form_data = JOB_PARAMETERS.copy()
+    form_data = (override_params or JOB_PARAMETERS).copy()
     
     # Add crumb to form data if available
     if crumb_value and crumb_field:
@@ -150,7 +162,7 @@ def trigger_jenkins_job(jenkins_username=None, jenkins_token=None, dry_run=False
     
     logger.info(f"Jenkins URL: {build_url}")
     logger.info(f"Job Name: {JOB_NAME}")
-    logger.info(f"Number of parameters: {len(JOB_PARAMETERS)}")
+    logger.info(f"Number of parameters: {len(form_data)}")
     
     if dry_run:
         logger.info("\n=== DRY RUN MODE ===")
@@ -202,8 +214,17 @@ def main():
     parser.add_argument("--jenkins-token", help="Jenkins API token for authentication")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be sent without actually triggering")
     parser.add_argument("--show-config", action="store_true", help="Show the memorized configuration")
+    parser.add_argument("--sync-from-build", help="Fetch parameters from the specified Jenkins build and use them (e.g., 8454)")
     
     args = parser.parse_args()
+
+    # Credentials: prefer CLI args, fallback to env vars
+    jenkins_username = args.jenkins_username or os.environ.get("JENKINS_USERNAME")
+    jenkins_token = args.jenkins_token or os.environ.get("JENKINS_TOKEN")
+    if args.jenkins_username is None and os.environ.get("JENKINS_USERNAME"):
+        logger.info("Using JENKINS_USERNAME from environment")
+    if args.jenkins_token is None and os.environ.get("JENKINS_TOKEN"):
+        logger.info("Using JENKINS_TOKEN from environment")
     
     if args.show_config:
         logger.info("=== Memorized Jenkins Job Configuration ===")
@@ -214,7 +235,29 @@ def main():
             logger.info(f"  {key}: {value}")
         return
     
-    success = trigger_jenkins_job(jenkins_username=args.jenkins_username, jenkins_token=args.jenkins_token, dry_run=args.dry_run)
+    override = None
+    if args.sync_from_build:
+        session = requests.Session()
+        crumb_value, crumb_field, auth_type, auth_value = get_jenkins_crumb(session, jenkins_username, jenkins_token)
+        if not auth_type:
+            logger.error("Authentication required to fetch parameters from Jenkins build. Provide --jenkins-username and --jenkins-token.")
+            sys.exit(1)
+        fetched = fetch_parameters_from_build(session, args.sync_from_build, auth_type, auth_value)
+        session.close()
+        if not fetched:
+            logger.error("Could not fetch parameters from the specified build")
+            sys.exit(1)
+        override = JOB_PARAMETERS.copy()
+        override.update(fetched)
+        logger.info(f"Overriding parameters with values from build {args.sync_from_build}. Overridden keys: "
+                    f"{[k for k in fetched.keys() if JOB_PARAMETERS.get(k) != fetched[k]]}")
+
+    success = trigger_jenkins_job(
+        jenkins_username=jenkins_username,
+        jenkins_token=jenkins_token,
+        dry_run=args.dry_run,
+        override_params=override,
+    )
     
     if not success and not args.dry_run:
         sys.exit(1)

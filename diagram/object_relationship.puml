@@ -1,0 +1,144 @@
+@startuml
+!define ENTITY(entityName) class entityName << (E,orchid) >>
+
+title NSX Operator Object Relationship Diagram
+
+' Cluster-scoped resources
+ENTITY(VPCNetworkConfiguration) {
+    + name : string <<PK>>
+    + nsxProject : string
+    + vpc : string
+    + defaultSubnetSize : string
+}
+
+ENTITY(IPBlocksInfo) {
+    + name : string <<PK>>
+    + externalIPCIDRs : array
+    + privateTGWIPCIDRs : array
+}
+
+' Namespace-scoped networking resources
+ENTITY(Namespace) {
+    + name : string <<PK>>
+    + labels : map
+    + annotations : map
+}
+
+ENTITY(Subnet) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + vpcName : string <<FK>>
+    + accessMode : string
+    + ipv4SubnetSize : int
+    + ipAddresses : array
+}
+
+ENTITY(SubnetSet) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + subnetCount : int
+    + vpcName : string <<FK>>
+}
+
+ENTITY(SubnetPort) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + subnetName : string <<FK>>
+    + podName : string <<FK>>
+    + ipAddresses : array
+}
+
+ENTITY(SubnetConnectionBindingMap) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + subnetName : string <<FK>>
+    + targetSubnet : string <<FK>>
+}
+
+' Network information and services
+ENTITY(NetworkInfo) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + vpcs : array
+    + defaultSNATIP : string
+}
+
+ENTITY(StaticRoute) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + vpcName : string <<FK>>
+    + routes : array
+}
+
+ENTITY(IPAddressAllocation) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + subnetName : string <<FK>>
+    + ipAddress : string
+}
+
+ENTITY(AddressBinding) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + ipAllocationName : string <<FK>>
+    + interfaceName : string
+}
+
+' Security resources
+ENTITY(SecurityPolicy) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + rules : array
+    + appliedTo : map
+}
+
+ENTITY(NSXServiceAccount) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + secretRef : string
+}
+
+' Kubernetes native resources
+ENTITY(Pod) {
+    + name : string <<PK>>
+    + namespace : string <<FK>>
+    + interfaces : array
+}
+
+' Relationship definitions with cardinality
+
+' 1:N relationships
+VPCNetworkConfiguration ||--o{ Subnet : configures
+VPCNetworkConfiguration ||--o{ SubnetSet : configures
+VPCNetworkConfiguration ||--o{ NetworkInfo : provides config
+
+Namespace ||--o{ Subnet : contains
+Namespace ||--o{ SubnetSet : contains
+Namespace ||--o{ SubnetPort : contains
+Namespace ||--|| NetworkInfo : has one
+
+Subnet ||--o{ SubnetPort : provides network
+Subnet ||--o{ IPAddressAllocation : allocates from
+Subnet ||--o{ StaticRoute : routes traffic
+
+SubnetSet ||--o{ Subnet : manages
+
+IPAddressAllocation ||--|| AddressBinding : binds to
+SubnetPort ||--|| IPAddressAllocation : uses
+SubnetPort ||--|| Pod : connects to
+
+' N:M relationships
+Subnet }o--o{ SubnetConnectionBindingMap : bound by
+SubnetSet }o--o{ SubnetConnectionBindingMap : manages bindings
+
+SecurityPolicy }o--o{ Subnet : secures
+SecurityPolicy }o--o{ Pod : applies to
+
+IPBlocksInfo }o--o{ IPAddressAllocation : informs
+IPBlocksInfo }o--o{ NetworkInfo : feeds data
+
+' Special relationships
+NSXServiceAccount }o--o{ SecurityPolicy : authenticates
+StaticRoute }o--o{ VPCNetworkConfiguration : applies routing
+
+@enduml

@@ -1,0 +1,40 @@
+@startuml
+!define K8S_COLOR #e1f5fe
+!define K8S_BORDER #0277bd
+!define NSX_COLOR #fce4ec
+!define NSX_BORDER #c2185b
+!define INFO_COLOR #e8f5e8
+!define INFO_BORDER #388e3c
+
+skinparam rectangle {
+    BackgroundColor<<k8s>> K8S_COLOR
+    BorderColor<<k8s>> K8S_BORDER
+    BackgroundColor<<nsx>> NSX_COLOR
+    BorderColor<<nsx>> NSX_BORDER
+    BackgroundColor<<info>> INFO_COLOR
+    BorderColor<<info>> INFO_BORDER
+    BorderThickness 2
+    RoundCorner 10
+}
+
+skinparam ArrowColor #666666
+skinparam ArrowThickness 2
+
+title IPBlock and VPCNetworkConfiguration Relationship
+
+rectangle "VPCNetworkConfiguration\n🏗️ VPC配置" as VNC <<k8s>>
+rectangle "VPCConnectivityProfile\n🔗 NSX连接配置文件" as VCP <<nsx>>
+rectangle "External IP Blocks\n🌐 外部IP块" as EIPB <<nsx>>
+rectangle "Private TGW IP Blocks\n🏠 私有传输网关IP块" as PIPB <<nsx>>
+rectangle "IPBlocksInfo\n📋 IP块信息聚合" as IPBI <<k8s>>
+rectangle "NetworkInfo\n📊 网络信息" as NI <<k8s>>
+
+VNC ..> VCP : references
+VCP --> EIPB : contains
+VCP --> PIPB : contains
+EIPB --> IPBI : aggregated by
+PIPB --> IPBI : aggregated by
+IPBI ..> NI : feeds data to
+VNC ..> NI : creates
+
+@enduml
