@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 
+import os
 import re
 import sys
+
+# Add parent directory to path to find util module
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from util import util
 from util.logger import get_logger
@@ -24,12 +28,81 @@ class BuildAnalyzer:
             # Default to ob if no prefix is provided
             return 'ob', build_input
 
+    def detect_build_host_type(self, build_number, build_type='ob'):
+        """Detect the build host OS type from the build page"""
+        if build_type == 'ob':
+            build_logs_url = f"{self.base_url}/bora-{build_number}/logs/"
+        else:  # sb
+            build_logs_url = f"{self.base_url}/sb-{build_number}/logs/"
+        
+        log.info(f"Detecting build host type from {build_logs_url}")
+        
+        # Download the logs directory listing
+        temp_file = f"/tmp/build_{build_type}_{build_number}_logs_listing.html"
+        ret_code, output = util.runcmd(f"wget -q -O {temp_file} {build_logs_url}")
+        
+        if ret_code != 0:
+            log.warning(f"Failed to download logs listing page: {output}")
+            return None
+        
+        try:
+            with open(temp_file, 'r') as f:
+                content = f.read()
+            
+            # Look for common OS types in the HTML content
+            # Common patterns: linux-rocky8-vm-fw, linux-centos8-fw, linux-centos72-gc32-fw
+            os_types = []
+            
+            # Search for directory links containing linux-*-fw patterns
+            import re
+            patterns = [
+                r'href="(linux-rocky\d+-vm-fw)/"',
+                r'href="(linux-centos\d+-fw)/"',
+                r'href="(linux-centos\d+-gc\d+-fw)/"',
+                r'href="(linux-[^"]*-fw)/"'  # Generic catch-all for other linux-*-fw patterns
+            ]
+            
+            for pattern in patterns:
+                matches = re.findall(pattern, content)
+                for match in matches:
+                    if match not in os_types:
+                        os_types.append(match)
+            
+            if os_types:
+                # Prefer rocky8 if available, otherwise use the first found
+                for os_type in os_types:
+                    if 'rocky' in os_type:
+                        log.info(f"Detected build host type: {os_type}")
+                        return os_type
+                
+                # If no rocky found, use the first one
+                log.info(f"Detected build host type: {os_types[0]}")
+                return os_types[0]
+            else:
+                log.warning("No build host OS type detected from logs listing")
+                return None
+                
+        except Exception as e:
+            log.error(f"Error parsing logs listing page: {e}")
+            return None
+        finally:
+            # Clean up temp file
+            util.runcmd(f"rm -f {temp_file}")
+
     def download_log(self, build_number, build_type='ob', log_type="gobuilds.log"):
         """Download build log for given build number and type"""
+        # Detect the correct build host OS type
+        os_type = self.detect_build_host_type(build_number, build_type)
+        
+        if not os_type:
+            # Fallback to the old hardcoded approach if detection fails
+            log.warning("OS type detection failed, falling back to hardcoded approach")
+            os_type = "linux-rocky8-vm-fw"
+        
         if build_type == 'ob':
-            url = f"{self.base_url}/bora-{build_number}/logs/linux-rocky8-vm-fw/{log_type}"
+            url = f"{self.base_url}/bora-{build_number}/logs/{os_type}/{log_type}"
         else:  # sb
-            url = f"{self.base_url}/sb-{build_number}/logs/linux-rocky8-vm-fw/{log_type}"
+            url = f"{self.base_url}/sb-{build_number}/logs/{os_type}/{log_type}"
 
         temp_file = f"/tmp/build_{build_type}_{build_number}_{log_type}"
 
@@ -37,7 +110,31 @@ class BuildAnalyzer:
         ret_code, output = util.runcmd(f"wget -q -O {temp_file} {url}")
 
         if ret_code != 0:
-            log.error(f"Failed to download log: {output}")
+            log.warning(f"Failed to download log from {os_type}: {output}")
+            
+            # If the detected OS type failed, try common fallbacks
+            fallback_os_types = ["linux-rocky8-vm-fw", "linux-centos8-fw", "linux-centos72-gc32-fw"]
+            
+            # Remove the already tried OS type from fallbacks
+            if os_type in fallback_os_types:
+                fallback_os_types.remove(os_type)
+            
+            for fallback_os in fallback_os_types:
+                if build_type == 'ob':
+                    fallback_url = f"{self.base_url}/bora-{build_number}/logs/{fallback_os}/{log_type}"
+                else:  # sb
+                    fallback_url = f"{self.base_url}/sb-{build_number}/logs/{fallback_os}/{log_type}"
+                
+                log.info(f"Trying fallback download from {fallback_url}")
+                ret_code, output = util.runcmd(f"wget -q -O {temp_file} {fallback_url}")
+                
+                if ret_code == 0:
+                    log.info(f"Successfully downloaded log using fallback OS type: {fallback_os}")
+                    return temp_file
+                else:
+                    log.warning(f"Failed to download log from {fallback_os}: {output}")
+            
+            log.error(f"Failed to download log from all attempted OS types")
             return None
 
         return temp_file
@@ -113,7 +210,7 @@ class BuildAnalyzer:
         }
 
     def parse_nsx_ujo_log(self, log_file):
-        """Parse nsx-ujo log to extract nsx-ujo commit, branch and nsx-operator commit"""
+        """Parse nsx-ujo log to extract nsx-ujo commit, branch and nsx-operator commit/branch"""
         log.info(f"Parsing nsx-ujo log: {log_file}")
 
         with open(log_file, 'r') as f:
@@ -128,30 +225,58 @@ class BuildAnalyzer:
         nsx_ujo_branch = branch_match.group(1) if branch_match else None
 
         # Look for the git clone and reset pattern for nsx-operator
-        pattern = r'git clone.*nsx-operator.*head_commit_id=([a-f0-9]{40}).*git reset ([a-f0-9]{40})'
-        match = re.search(pattern, content, re.DOTALL)
+        # Pattern 1: git clone ... nsx-operator ... git reset <commit>
+        pattern1 = r'git clone.*nsx-operator.*git reset ([a-f0-9]{40})'
+        match1 = re.search(pattern1, content, re.DOTALL)
+        
+        # Pattern 2: Using commit ID: <commit> from branch ... to build nsx-operator
+        pattern2 = r'Using commit ID: ([a-f0-9]{40}).*to build nsx-operator'
+        match2 = re.search(pattern2, content)
+        
+        # Pattern 3: head_commit_id=<commit> (legacy pattern)
+        pattern3 = r'head_commit_id=([a-f0-9]{40})'
+        match3 = re.search(pattern3, content)
 
         nsx_operator_commit = None
-        if match:
-            commit_id = match.group(1)
-            reset_id = match.group(2)
-            # They should be the same, use the reset_id as it's the final commit
-            nsx_operator_commit = reset_id
+        if match1:
+            nsx_operator_commit = match1.group(1)
+            log.info(f"Found nsx-operator commit from git reset: {nsx_operator_commit}")
+        elif match2:
+            nsx_operator_commit = match2.group(1)
+            log.info(f"Found nsx-operator commit from 'Using commit ID': {nsx_operator_commit}")
+        elif match3:
+            nsx_operator_commit = match3.group(1)
+            log.info(f"Found nsx-operator commit from head_commit_id: {nsx_operator_commit}")
         else:
-            # Alternative pattern if the format is different
-            alt_pattern = r'head_commit_id=([a-f0-9]{40})'
-            alt_match = re.search(alt_pattern, content)
-            if alt_match:
-                nsx_operator_commit = alt_match.group(1)
+            log.warning("Could not find nsx-operator commit in log")
+        
+        # Extract nsx-operator branch
+        # Pattern: git clone -b <branch> ... nsx-operator
+        nsx_operator_branch = None
+        branch_pattern = r'git clone -b ([^\s]+).*nsx-operator'
+        branch_match = re.search(branch_pattern, content)
+        if branch_match:
+            nsx_operator_branch = branch_match.group(1)
+            log.info(f"Found nsx-operator branch: {nsx_operator_branch}")
+        else:
+            # Alternative: from branch <branch> to build nsx-operator
+            alt_branch_pattern = r'from branch ([^\s]+) to build nsx-operator'
+            alt_branch_match = re.search(alt_branch_pattern, content)
+            if alt_branch_match:
+                nsx_operator_branch = alt_branch_match.group(1)
+                log.info(f"Found nsx-operator branch from alternative pattern: {nsx_operator_branch}")
 
         return {
             'nsx_ujo_commit': nsx_ujo_commit,
             'nsx_ujo_branch': nsx_ujo_branch,
-            'nsx_operator_commit': nsx_operator_commit
+            'nsx_operator_commit': nsx_operator_commit,
+            'nsx_operator_branch': nsx_operator_branch
         }
 
     def get_commit_page_url(self, repo, commit):
         """Generate commit page URL"""
+        if not commit:
+            return 'N/A'
         if repo == 'nsx-operator':
             return f"{self.gitlab_base}/-/commit/{commit}"
         else:
@@ -175,7 +300,7 @@ class BuildAnalyzer:
         results['vc'] = {
             'build_number': f"{vc_build_type}-{vc_build_number}",
             'branch': vc_data['branch'] if vc_data['branch'] else 'N/A',
-            'commit_page': self.get_commit_page_url('tera', vc_data['commit']) if vc_data['commit'] else 'N/A'
+            'commit_page': self.get_commit_page_url('tera', vc_data['commit'])
         }
 
         # Step 2: Analyze cayman_stateless_photon
@@ -187,7 +312,7 @@ class BuildAnalyzer:
                 results['photon'] = {
                     'build_number': f"{photon_build_type}-{vc_data['cayman_stateless_photon']}",
                     'branch': photon_data['branch'] if photon_data['branch'] else 'N/A',
-                    'commit_page': self.get_commit_page_url('cayman_photon', photon_data['commit']) if photon_data['commit'] else 'N/A'
+                    'commit_page': self.get_commit_page_url('cayman_photon', photon_data['commit'])
                 }
 
                 # Step 3: Analyze photon's nsx-ujo
@@ -199,12 +324,12 @@ class BuildAnalyzer:
                         results['photon/nsx-ujo'] = {
                             'build_number': f"{photon_nsx_build_type}-{photon_data['nsx_ujo']}",
                             'branch': photon_nsx_data['nsx_ujo_branch'] if photon_nsx_data['nsx_ujo_branch'] else 'N/A',
-                            'commit_page': self.get_commit_page_url('nsx-ujo', photon_nsx_data['nsx_ujo_commit']) if photon_nsx_data['nsx_ujo_commit'] else 'N/A'
+                            'commit_page': self.get_commit_page_url('nsx-ujo', photon_nsx_data['nsx_ujo_commit'])
                         }
                         results['photon/nsx-operator'] = {
-                            'build_number': f"N/A",
-                            'branch': 'N/A',
-                            'commit_page': self.get_commit_page_url('nsx-operator', photon_nsx_data['nsx_operator_commit']) if photon_nsx_data['nsx_operator_commit'] else 'N/A'
+                            'build_number': 'N/A',
+                            'branch': photon_nsx_data.get('nsx_operator_branch', 'N/A'),
+                            'commit_page': self.get_commit_page_url('nsx-operator', photon_nsx_data['nsx_operator_commit'])
                         }
 
         # Step 4: Analyze wcp
@@ -216,7 +341,7 @@ class BuildAnalyzer:
                 results['wcp'] = {
                     'build_number': f"{wcp_build_type}-{vc_data['wcp']}",
                     'branch': wcp_data['branch'] if wcp_data['branch'] else 'N/A',
-                    'commit_page': self.get_commit_page_url('tera', wcp_data['commit']) if wcp_data['commit'] else 'N/A'
+                    'commit_page': self.get_commit_page_url('tera', wcp_data['commit'])
                 }
 
                 # Step 5: Analyze wcp's nsx-ujo
@@ -228,12 +353,12 @@ class BuildAnalyzer:
                         results['wcp/nsx-ujo'] = {
                             'build_number': f"{wcp_nsx_build_type}-{wcp_data['nsx_ujo']}",
                             'branch': wcp_nsx_data['nsx_ujo_branch'] if wcp_nsx_data['nsx_ujo_branch'] else 'N/A',
-                            'commit_page': self.get_commit_page_url('nsx-ujo', wcp_nsx_data['nsx_ujo_commit']) if wcp_nsx_data['nsx_ujo_commit'] else 'N/A'
+                            'commit_page': self.get_commit_page_url('nsx-ujo', wcp_nsx_data['nsx_ujo_commit'])
                         }
                         results['wcp/nsx-operator'] = {
-                            'build_number': f"N/A",
-                            'branch': 'N/A',
-                            'commit_page': self.get_commit_page_url('nsx-operator', wcp_nsx_data['nsx_operator_commit']) if wcp_nsx_data['nsx_operator_commit'] else 'N/A'
+                            'build_number': 'N/A',
+                            'branch': wcp_nsx_data.get('nsx_operator_branch', 'N/A'),
+                            'commit_page': self.get_commit_page_url('nsx-operator', wcp_nsx_data['nsx_operator_commit'])
                         }
 
         return results
@@ -256,7 +381,7 @@ class BuildAnalyzer:
         results['wcp'] = {
             'build_number': f"{wcp_build_type}-{wcp_build_number}",
             'branch': wcp_data['branch'] if wcp_data['branch'] else 'N/A',
-            'commit_page': self.get_commit_page_url('tera', wcp_data['commit']) if wcp_data['commit'] else 'N/A'
+            'commit_page': self.get_commit_page_url('tera', wcp_data['commit'])
         }
 
         # Analyze wcp's nsx-ujo
@@ -268,12 +393,12 @@ class BuildAnalyzer:
                 results['wcp/nsx-ujo'] = {
                     'build_number': f"{wcp_nsx_build_type}-{wcp_data['nsx_ujo']}",
                     'branch': wcp_nsx_data['nsx_ujo_branch'] if wcp_nsx_data['nsx_ujo_branch'] else 'N/A',
-                    'commit_page': self.get_commit_page_url('nsx-ujo', wcp_nsx_data['nsx_ujo_commit']) if wcp_nsx_data['nsx_ujo_commit'] else 'N/A'
+                    'commit_page': self.get_commit_page_url('nsx-ujo', wcp_nsx_data['nsx_ujo_commit'])
                 }
                 results['wcp/nsx-operator'] = {
-                    'build_number': f"N/A",
-                    'branch': 'N/A',
-                    'commit_page': self.get_commit_page_url('nsx-operator', wcp_nsx_data['nsx_operator_commit']) if wcp_nsx_data['nsx_operator_commit'] else 'N/A'
+                    'build_number': 'N/A',
+                    'branch': wcp_nsx_data.get('nsx_operator_branch', 'N/A'),
+                    'commit_page': self.get_commit_page_url('nsx-operator', wcp_nsx_data['nsx_operator_commit'])
                 }
 
         return results
@@ -296,7 +421,7 @@ class BuildAnalyzer:
         results['photon'] = {
             'build_number': f"{photon_build_type}-{photon_build_number}",
             'branch': photon_data['branch'] if photon_data['branch'] else 'N/A',
-            'commit_page': self.get_commit_page_url('cayman_photon', photon_data['commit']) if photon_data['commit'] else 'N/A'
+            'commit_page': self.get_commit_page_url('cayman_photon', photon_data['commit'])
         }
 
         # Analyze photon's nsx-ujo
@@ -308,12 +433,12 @@ class BuildAnalyzer:
                 results['photon/nsx-ujo'] = {
                     'build_number': f"{photon_nsx_build_type}-{photon_data['nsx_ujo']}",
                     'branch': photon_nsx_data['nsx_ujo_branch'] if photon_nsx_data['nsx_ujo_branch'] else 'N/A',
-                    'commit_page': self.get_commit_page_url('nsx-ujo', photon_nsx_data['nsx_ujo_commit']) if photon_nsx_data['nsx_ujo_commit'] else 'N/A'
+                    'commit_page': self.get_commit_page_url('nsx-ujo', photon_nsx_data['nsx_ujo_commit'])
                 }
                 results['photon/nsx-operator'] = {
-                    'build_number': f"N/A",
-                    'branch': 'N/A',
-                    'commit_page': self.get_commit_page_url('nsx-operator', photon_nsx_data['nsx_operator_commit']) if photon_nsx_data['nsx_operator_commit'] else 'N/A'
+                    'build_number': 'N/A',
+                    'branch': photon_nsx_data.get('nsx_operator_branch', 'N/A'),
+                    'commit_page': self.get_commit_page_url('nsx-operator', photon_nsx_data['nsx_operator_commit'])
                 }
 
         return results
@@ -336,12 +461,12 @@ class BuildAnalyzer:
         results['nsx-ujo'] = {
             'build_number': f"{nsx_ujo_build_type}-{nsx_ujo_build_number}",
             'branch': nsx_ujo_data['nsx_ujo_branch'] if nsx_ujo_data['nsx_ujo_branch'] else 'N/A',
-            'commit_page': self.get_commit_page_url('nsx-ujo', nsx_ujo_data['nsx_ujo_commit']) if nsx_ujo_data['nsx_ujo_commit'] else 'N/A'
+            'commit_page': self.get_commit_page_url('nsx-ujo', nsx_ujo_data['nsx_ujo_commit'])
         }
         results['nsx-operator'] = {
-            'build_number': f"N/A",
-            'branch': 'N/A',
-            'commit_page': self.get_commit_page_url('nsx-operator', nsx_ujo_data['nsx_operator_commit']) if nsx_ujo_data['nsx_operator_commit'] else 'N/A'
+            'build_number': 'N/A',
+            'branch': nsx_ujo_data.get('nsx_operator_branch', 'N/A'),
+            'commit_page': self.get_commit_page_url('nsx-operator', nsx_ujo_data['nsx_operator_commit'])
         }
 
         return results
