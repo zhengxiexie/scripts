@@ -5,8 +5,12 @@ This module manages NSX NCP (Network Control Plane) deployments in Kubernetes,
 providing functionality to update deployments, manage volumes, and monitor pod status.
 """
 
+import os
 import sys
 import time
+
+# Add the parent directory to the path to find util module
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from util import util
 from timeout_decorator import timeout_decorator
