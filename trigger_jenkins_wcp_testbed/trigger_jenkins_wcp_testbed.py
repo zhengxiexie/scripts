@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trigger Jenkins job 'dev-nsxvpc'. Optionally sync parameters from a specific build (e.g., 8454).
+Trigger Jenkins job 'dev-nsxvpc'. Optionally sync parameters from a specific build (e.g., 9026).
 """
 
 import requests
@@ -17,16 +17,16 @@ logger = get_logger(__name__)
 JENKINS_BASE_URL = "https://jenkins-vcf-wcp-dev.devops.broadcom.net"
 JOB_NAME = "dev-nsxvpc"
 
-# Job parameters synced from build #8454
+# Job parameters synced from build #9026
 JOB_PARAMETERS = {
-    "TERA_REF": "",
+    "TERA_REF": "topic/xz037905/main/enable-inventory-true",
     "PERFORCE_BRANCH": "main",
-    "SKIP_CLEANUP": True,
+    "SKIP_CLEANUP": False,
     "SUPPORT_BUNDLES": True,
-    "OVA_BUILD": "ob-24871681",
+    "OVA_BUILD": "",
     "ASYNC_OVA_BUILD": "",
-    "VC_BUILD": "ob-24876732",
-    "ESX_BUILD": "ob-24876735",
+    "VC_BUILD": "ob-24957389",
+    "ESX_BUILD": "ob-24957388",
     "NSX_SETUP": True,
     "SHORT_FORM_RUNNAME": True,
     "SPHERELET_BUILD": "",
@@ -34,15 +34,13 @@ JOB_PARAMETERS = {
     "NO_OF_SUPERVISORS": "1",
     "SCALE_OUT_CPVM": False,
     "FORCE_K8S_VERSION": "",
-    "KEEP_TESTBED_HOURS": "168",
+    "KEEP_TESTBED_HOURS": "97",
     "TESTBED_POLICY": "DELETE_NEVER",
     "DHCP_FIP": True,
     "APPROVED_BUILDS_JSON_URL": "https://jenkins-vcfwcp.devops.broadcom.net/job/prod-integ-nsxvpc/lastSuccessfulBuild/artifact/builds.json",
     "GUESTCLUSTER_SETUP": False,
     "GC_OVA_BUILD": "",
-    "NSXT_BUILD": "ob-24944129",
-    # "NSXT_BUILD": "ob-24942127",
-    "VDNET_LAUNCHER_OVF": "vdnet-launcher-ubuntu2004-v6",
+    "NSXT_BUILD": "ob-24959746",
     "VDNET_BRANCH": "rtqa-staging",
     "VDNET_COMMIT_ID": "",
     "PERFORM_TEST_CLEANUP": False,
@@ -51,8 +49,8 @@ JOB_PARAMETERS = {
     "SKIP_VC_ESX_CLN_CHECK": "true",
     "DISABLE_NS_ISOLATION": False,
     "NIMBUS_LOCATION": "LVN",
-    "WCP_BUILD": "ob-24871682",
-    "FEATURE_STATES": "WCP_Workload_Domain_Isolation=enabled,WCP_VPC_Network=enabled,WCP_Simplified_Enablement=enabled,WCP_VM_Reservations=enabled,PAIF_AcceleratorCapacityReservation=enabled,PAIF_CapacityVisualization=enabled",
+    # "WCP_BUILD": "sb-89848036",
+    "FEATURE_STATES": "",
     "SUPERVISOR_CAPABILITIES": "",
     "NUM_ESX": "",
     "CLUSTER_ROUTED_MODE": False,
@@ -65,13 +63,14 @@ JOB_PARAMETERS = {
     "SKIP_SYNC_TO_WCP_CLN": False,
     "ENABLE_VSAN": False,
     "CREATE_VSAN_DIRECT_DATASTORE": False,
-    "TESTS_TO_RUN": "None",
+    "TESTS_TO_RUN": "",
     "TEST_GROUPS": "",
     "NSX_VDS_VERSION": "0",
     "TKG_SVS_CONFIG_OVERRIDE": "",
     "NSX_VPC": True,
     "NSX_LOAD_BALANCER": "nsx-lb",
     "TGW_TYPE": "centralized",
+    "DISABLE_ULM": True,
     "PRIVATE_INFRA": "PUBLIC",
     "USE_INSTAPP": False
 }
@@ -214,7 +213,7 @@ def main():
     parser.add_argument("--jenkins-token", help="Jenkins API token for authentication")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be sent without actually triggering")
     parser.add_argument("--show-config", action="store_true", help="Show the memorized configuration")
-    parser.add_argument("--sync-from-build", help="Fetch parameters from the specified Jenkins build and use them (e.g., 8454)")
+    parser.add_argument("--sync-from-build", help="Fetch parameters from the specified Jenkins build and use them (e.g., 9026)")
     
     args = parser.parse_args()
 

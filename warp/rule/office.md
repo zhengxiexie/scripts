@@ -6,8 +6,6 @@ improving productivity and usability in the terminal.
 
 | Traditional Command | Modern Alternative | Install Command (brew) | Key Features                                                 |
 |---------------------|--------------------|------------------------|--------------------------------------------------------------|
-| cat                 | **bat**            | brew install bat       | Syntax highlighting, line numbers, Git integration           |
-| less, more          | **bat**            | brew install bat       | Modern pager with preview; use as a replacement              |
 | grep                | **rg** (ripgrep)   | brew install ripgrep   | Fast recursive search, sensible defaults, ignores .gitignore |
 | find                | **fd**             | brew install fd        | Intuitive syntax, color output, smart ignoring               |
 | ls                  | **exa**            | brew install exa       | Tree view, colors, better file info                          |
