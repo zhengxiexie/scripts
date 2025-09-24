@@ -3,25 +3,8 @@ Use modern, efficient 21st-century CLI tools for routine operations.
 Here are recommended **21st-century CLI tooling standards**. 
 These tools provide modern, fast, and user-friendly alternatives to traditional Unix commands,
 improving productivity and usability in the terminal.
-
-| Traditional Command | Modern Alternative | Install Command (brew) | Key Features                                                 |
-|---------------------|--------------------|------------------------|--------------------------------------------------------------|
-| grep                | **rg** (ripgrep)   | brew install ripgrep   | Fast recursive search, sensible defaults, ignores .gitignore |
-| find                | **fd**             | brew install fd        | Intuitive syntax, color output, smart ignoring               |
-| ls                  | **exa**            | brew install exa       | Tree view, colors, better file info                          |
-| du                  | **dua**            | brew install dua-cli   | Interactive disk usage analyzer                              |
-| htop, top           | **btop**           | brew install btop      | Modern resource monitor, mouse support, graphs               |
-| ps                  | **procs**          | brew install procs     | Easy-to-read, colored process listing                        |
-| curl/wget           | **httpie**         | brew install httpie    | Easier REST API interaction with JSON, colors                |
-| sed/awk             | **sd**             | brew install sd        | Intuitive, fast find-and-replace                             |
-| diff                | **delta**          | brew install git-delta | Syntax highlighting, side-by-side diffs                      |
-| head/tail           | **hck**            | brew install hck       | Fast and flexible text viewing                               |
-| tree                | **tre**            | brew install tre       | Fast directory tree with git integration                     |
-| man                 | **tldr**           | brew install tldr      | Community-driven simple man pages                            |
-| df                  | **duf**            | brew install duf       | Colorful, interactive disk usage info                        |
-•	Always prefer the recommended tool.
-•	If not installed, use brew, tdnf, apt, or yum.
-
+The tool list is at ~/Code/scripts/bin that are a linux version.  They are installed on the default locations in Mac, you can use directly without the full path.
+If the tool is set with a pager, then you can use the traditional tool that with no pager.
 
 ## 2. Pager Behavior (gh & git) 
 Use `gh config set pager cat`,  this avoids paginated output, ensuring compatibility with scriptable workflows. After the job is done, revert it.
