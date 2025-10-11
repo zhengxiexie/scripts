@@ -235,8 +235,8 @@ class NSXNCPStrategy(ContainerConfigurationStrategy):
             container.args = self.config.SLEEP_ARGS.copy()
             
             # Update liveness probe for sleep mode
-            if container.liveness_probe and container.liveness_probe.exec:
-                container.liveness_probe.exec.command = [
+            if container.liveness_probe and container.liveness_probe._exec:
+                container.liveness_probe._exec.command = [
                     "/bin/sh", "-c", "check_pod_liveness nsx-ncp 3000000"
                 ]
                 container.liveness_probe.failure_threshold = self.config.LIVENESS_PROBE_FAILURE_THRESHOLD
@@ -246,8 +246,8 @@ class NSXNCPStrategy(ContainerConfigurationStrategy):
             container.args = None
             
             # Restore normal liveness probe
-            if container.liveness_probe and container.liveness_probe.exec:
-                container.liveness_probe.exec.command = [
+            if container.liveness_probe and container.liveness_probe._exec:
+                container.liveness_probe._exec.command = [
                     "/bin/sh", "-c", "check_pod_liveness nsx-ncp 30"
                 ]
                 container.liveness_probe.failure_threshold = 5
