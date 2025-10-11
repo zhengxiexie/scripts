@@ -17,16 +17,16 @@ logger = get_logger(__name__)
 JENKINS_BASE_URL = "https://jenkins-vcf-wcp-dev.devops.broadcom.net"
 JOB_NAME = "dev-nsxvpc"
 
-# Job parameters synced from build #9026
+# Job parameters synced from build #9844
 JOB_PARAMETERS = {
-    "TERA_REF": "topic/xz037905/main/enable-inventory-true",
+    "TERA_REF": "",
     "PERFORCE_BRANCH": "main",
     "SKIP_CLEANUP": False,
     "SUPPORT_BUNDLES": True,
     "OVA_BUILD": "",
     "ASYNC_OVA_BUILD": "",
-    "VC_BUILD": "ob-24957389",
-    "ESX_BUILD": "ob-24957388",
+    "VC_BUILD": "ob-24992891",
+    "ESX_BUILD": "ob-24992904",
     "NSX_SETUP": True,
     "SHORT_FORM_RUNNAME": True,
     "SPHERELET_BUILD": "",
@@ -40,7 +40,7 @@ JOB_PARAMETERS = {
     "APPROVED_BUILDS_JSON_URL": "https://jenkins-vcfwcp.devops.broadcom.net/job/prod-integ-nsxvpc/lastSuccessfulBuild/artifact/builds.json",
     "GUESTCLUSTER_SETUP": False,
     "GC_OVA_BUILD": "",
-    "NSXT_BUILD": "ob-24959746",
+    "NSXT_BUILD": "ob-24992013",
     "VDNET_BRANCH": "rtqa-staging",
     "VDNET_COMMIT_ID": "",
     "PERFORM_TEST_CLEANUP": False,
@@ -50,7 +50,7 @@ JOB_PARAMETERS = {
     "DISABLE_NS_ISOLATION": False,
     "NIMBUS_LOCATION": "LVN",
     # "WCP_BUILD": "sb-89848036",
-    "FEATURE_STATES": "",
+    "FEATURE_STATES": "WCP_VPC_With_DTGW=enabled",
     "SUPERVISOR_CAPABILITIES": "",
     "NUM_ESX": "",
     "CLUSTER_ROUTED_MODE": False,
