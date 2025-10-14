@@ -149,6 +149,21 @@ class NSXOperatorStrategy(ContainerConfigurationStrategy):
     def configure_normal_mode(self, deployment: client.V1Deployment, container: client.V1Container) -> None:
         """Configure deployment for NSX Operator normal operation mode."""
         self._remove_operator_volume(deployment, container)
+        
+        # Remove sleep commands and restore normal operation
+        container.command = [
+            "/usr/local/bin/manager", 
+            "-nsxconfig", self.config.NCP_INI_FILE, 
+            "-health-probe-bind-address", ":8383", 
+            "-log-level", "2"
+        ]
+        container.args = None
+        
+        # Restore normal liveness probe
+        if container.liveness_probe:
+            container.liveness_probe.failure_threshold = 5
+        
+        self.logger.info(f"Configured NSX Operator container '{container.name}' for normal mode")
     
     def update_container_command(self, container: client.V1Container, sleep_mode: bool) -> None:
         """Update NSX Operator container command and liveness probe."""
@@ -225,8 +240,18 @@ class NSXNCPStrategy(ContainerConfigurationStrategy):
     
     def configure_normal_mode(self, deployment: client.V1Deployment, container: client.V1Container) -> None:
         """Configure deployment for NSX NCP normal operation mode."""
-        # For NCP normal mode, no special cleanup is needed
-        pass
+        # Remove sleep commands and restore normal operation
+        container.command = None  # Use default from image
+        container.args = None
+        
+        # Restore normal liveness probe
+        if container.liveness_probe and container.liveness_probe._exec:
+            container.liveness_probe._exec.command = [
+                "/bin/sh", "-c", "check_pod_liveness nsx-ncp 30"
+            ]
+            container.liveness_probe.failure_threshold = 5
+        
+        self.logger.info(f"Configured NCP container '{container.name}' for normal mode")
     
     def update_container_command(self, container: client.V1Container, sleep_mode: bool) -> None:
         """Update NSX NCP container command and liveness probe."""
