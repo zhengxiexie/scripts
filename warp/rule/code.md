@@ -5,7 +5,7 @@
 ### 1. Code File Size Limits
 
 - For **dynamic languages** (e.g., Python, JavaScript, TypeScript):  
-  **Each code file should not exceed 200 lines.**
+  **Each code file should not exceed 79 lines.**
 - For **static languages** (e.g., Java, Go, Rust):  
   **Each code file should not exceed 250 lines.**
 
