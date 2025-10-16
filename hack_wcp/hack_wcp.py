@@ -150,14 +150,21 @@ class NSXOperatorStrategy(ContainerConfigurationStrategy):
         """Configure deployment for NSX Operator normal operation mode."""
         self._remove_operator_volume(deployment, container)
         
-        # Remove sleep commands and restore normal operation
-        container.command = [
-            "/usr/local/bin/manager", 
-            "-nsxconfig", self.config.NCP_INI_FILE, 
-            "-health-probe-bind-address", ":8383", 
-            "-log-level", "2"
-        ]
-        container.args = None
+        # Check if command contains sleep and remove it
+        if container.command and any("sleep" in str(cmd) for cmd in container.command):
+            self.logger.info(f"Removing sleep command from container '{container.name}'")
+            container.command = None
+            container.args = None
+        
+        # Set normal operation command if not already set
+        if not container.command:
+            container.command = [
+                "/usr/local/bin/manager", 
+                "-nsxconfig", self.config.NCP_INI_FILE, 
+                "-health-probe-bind-address", ":8383", 
+                "-log-level", "2"
+            ]
+            container.args = None
         
         # Restore normal liveness probe
         if container.liveness_probe:
@@ -240,9 +247,16 @@ class NSXNCPStrategy(ContainerConfigurationStrategy):
     
     def configure_normal_mode(self, deployment: client.V1Deployment, container: client.V1Container) -> None:
         """Configure deployment for NSX NCP normal operation mode."""
-        # Remove sleep commands and restore normal operation
-        container.command = None  # Use default from image
-        container.args = None
+        # Check if command contains sleep and remove it
+        if container.command and any("sleep" in str(cmd) for cmd in container.command):
+            self.logger.info(f"Removing sleep command from container '{container.name}'")
+            container.command = None
+            container.args = None
+        
+        # Use default from image if no specific command needed
+        if not container.command:
+            container.command = None  # Use default from image
+            container.args = None
         
         # Restore normal liveness probe
         if container.liveness_probe and container.liveness_probe._exec:
