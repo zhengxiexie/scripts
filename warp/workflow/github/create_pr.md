@@ -9,7 +9,7 @@ Create a professional pull request from the current branch with automated diff a
 
 ### Steps
 
-#### 0. Combine bug info as a bug info background
+#### 0. Combine bug info as a bug info background(if applicable)
 Analyze `{{bug_info}}` using workflow in warp as the bug background description to attach in PR.
 
 #### 1. Pre-flight Configuration
