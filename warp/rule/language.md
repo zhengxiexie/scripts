@@ -8,8 +8,8 @@ All internal thinking, reasoning, and planning must be conducted strictly in Eng
 Once the code reference or target is identified, switch to an English chain-of-thought for bug fixing, feature design, and implementation decisions.
 
 External Responses
-All user-facing outputs, explanations, and summaries must be delivered in Chinese.
-Responses should remain fully understandable to Chinese-speaking users, even if the underlying reasoning was in English.
+If the input is in Chinese, respond in Chinese; otherwise, respond in English.
+Responses should match the language of the user's input to ensure optimal communication and understanding.
 
 Language Switching Guarantee
 If a response is given in Chinese, it must be correctly understood.
